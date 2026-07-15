@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate skills + manifests (frontmatter, anchors, registration, version sync)
+        run: python3 scripts/validate-skills.py
+
+      - name: Validate all JSON parses
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            jq -e . "$f" >/dev/null || { echo "invalid JSON: $f"; fail=1; }
+          done < <(git ls-files '*.json')
+          exit $fail
+
+      - name: ShellCheck scripts
+        run: shellcheck install.sh update.sh uninstall.sh scripts/*.sh
+
+      - name: bash -n (syntax) on all shell scripts
+        run: |
+          for f in install.sh update.sh uninstall.sh scripts/*.sh; do bash -n "$f"; done
+
+      - name: Markdown link + anchor check
+        run: |
+          # Cross-file reference.md#anchor links are covered by validate-skills.py.
+          # Here: flag obviously-broken local file links (path doesn't exist).
+          fail=0
+          while IFS= read -r md; do
+            case "$md" in template/*) continue ;; esac   # scaffold uses destination-relative links
+            dir=$(dirname "$md")
+            while IFS= read -r target; do
+              [ -z "$target" ] && continue
+              case "$target" in http*|\#*) continue ;; esac
+              path="${target%%#*}"
+              [ -z "$path" ] && continue
+              if [ ! -e "$dir/$path" ]; then echo "$md → missing link target: $path"; fail=1; fi
+            done < <(grep -oE '\]\(([^)]+)\)' "$md" | sed -E 's/^\]\(//; s/\)$//')
+          done < <(git ls-files '*.md')
+          exit $fail
