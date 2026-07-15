@@ -1,0 +1,30 @@
+name: CLI drift / wrong or unsafe guidance
+description: A skill's documented behavior no longer matches the CLI, or a gotcha/flag is wrong or unsafe.
+labels: [drift]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Which skill?
+      options: [codex-exec, claude-headless, grok-headless, agy-headless, headless-delegate, other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: CLI version you observed
+      placeholder: "e.g. grok 0.3.1"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the skill says vs. what the CLI actually does
+      description: Include the command you ran and the real output.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Account type, OS, safety concern, etc.

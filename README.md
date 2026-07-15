@@ -1,36 +1,57 @@
 # azagatti-skills
 
-A small collection of [Claude Code](https://code.claude.com) **skills** for driving other coding CLIs **headlessly** — so one agent can delegate a self-contained task to another model's CLI, get a cross-vendor second opinion, or produce structured output for scripts and CI.
+[![release](https://img.shields.io/github/v/release/AZagatti/azagatti-skills?sort=semver)](https://github.com/AZagatti/azagatti-skills/releases)
+[![ci](https://github.com/AZagatti/azagatti-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/AZagatti/azagatti-skills/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/github/license/AZagatti/azagatti-skills)](LICENSE)
+[![skills.sh](https://skills.sh/b/AZagatti/azagatti-skills)](https://skills.sh/AZagatti/azagatti-skills)
 
-Each skill is the distilled, **empirically-verified** manual for one CLI's non-interactive (`-p` / `exec` / `run`) mode: the exact invocation, the permission model (what silently no-ops), the output shape, and the model/effort matrix — the parts agents forget or get subtly wrong.
+Andre Zagatti's [Claude Code](https://code.claude.com) **skills** — a growing collection, grouped into **plugins by category**. Each skill is empirically verified against the real tool it documents, not written from assumption.
 
-## Skills
+The first (and currently only) plugin is **`headless-clis`**. Future categories will be added as additional plugins in the same marketplace.
 
-| Skill | CLI | Headless entry | Notes |
-|-------|-----|----------------|-------|
-| **`codex-exec`** | OpenAI Codex (`codex`) | `codex exec` | Agentic; `-C` workspace, sandbox modes, `review --base`, resume, JSON events, model reasoning-effort (none/low/…/max). |
-| **`claude-headless`** | Claude Code (`claude`) | `claude -p` | Permission model (writes denied by default → `permission_denials`), `--output-format json`, model + `--effort` per-model support. |
-| **`grok-headless`** | xAI Grok Build (`grok`) | `grok -p` | The `-p`-takes-the-prompt-as-its-value gotcha, default denies writes (`stopReason: Cancelled`), account-scoped models, per-model effort/reasoning-off. |
-| **`agy-headless`** | Google Antigravity (`agy`) | `agy -p` | Multi-vendor (Gemini/Claude/GPT-OSS behind one login); **no cwd — use `--add-dir`**; effort baked into the model name; plain-text only. |
+---
 
-Every skill is a folder under [`skills/`](./skills) with a concise `SKILL.md` entry point plus a `reference.md` (progressive disclosure), following the [Agent Skills](https://github.com/anthropics/skills) convention.
+## Plugin: `headless-clis`
+
+Drive other coding CLIs **headlessly** — so one agent can delegate a self-contained task to another model's CLI, get a **cross-vendor second opinion**, run cheaper/parallel work, or produce structured output for scripts and CI. Start with **`headless-delegate`** (the router) if you're not sure which CLI to use.
+
+| Skill | CLI | Headless entry | Tested | Headline gotcha |
+|-------|-----|----------------|--------|-----------------|
+| [**headless-delegate**](skills/headless-delegate/SKILL.md) | — (router) | picks one of the below | — | cross-vendor is the value; delegating a model to itself just adds cost |
+| [**codex-exec**](skills/codex-exec/SKILL.md) | OpenAI Codex | `codex exec` | `codex 0.144.3` | `-C` must precede `review`; reasoning off by default |
+| [**claude-headless**](skills/claude-headless/SKILL.md) | Claude Code | `claude -p` | `claude 2.1.208` | writes denied by default → check `permission_denials` |
+| [**grok-headless**](skills/grok-headless/SKILL.md) | xAI Grok Build | `grok -p` | `grok 0.2.93` | `-p` takes the prompt as its value; review needs `--always-approve` |
+| [**agy-headless**](skills/agy-headless/SKILL.md) | Google Antigravity | `agy -p` | `agy 1.1.2` | no cwd → `--add-dir`; hangs (not errors) on unapproved tools |
+
+*(Last verified 2026-07. CLI behavior drifts — each skill points you at runtime `<cli> models` as the source of truth.)*
+
+**→ [Cross-CLI comparison & chooser](docs/cli-comparison.md)** · **[Safety & blast radius](docs/safety.md)**
+
+## Quick start
+
+```bash
+# 1. install (any of the options below)
+# 2. sanity-check which delegate CLIs you have + their auth:
+./scripts/doctor.sh
+# 3. in Claude Code, ask for a delegation — the skills route it:
+#    "get a second opinion from Codex on this diff"  → codex-exec
+#    "review my PR with grok"                          → grok-headless
+```
 
 ## Install
 
 ### Option A — plugin marketplace (recommended)
 
-Versioned via git, no symlinks, works on any machine. In Claude Code:
+Versioned via git, no symlinks. In Claude Code:
 
 ```
 /plugin marketplace add AZagatti/azagatti-skills
 /plugin install headless-clis@azagatti-skills
 ```
 
-Update later with `/plugin marketplace update azagatti-skills`. The skills load from Claude Code's plugin cache — they don't touch your personal `~/.claude/skills/`.
+Update with `/plugin marketplace update azagatti-skills`. Skills load from the plugin cache — they don't touch your personal `~/.claude/skills/`.
 
-### Option B — symlink (for local editing / other providers)
-
-Clone once and symlink each skill into your skills dir, so `git pull` updates them and edits flow straight back to the repo:
+### Option B — symlink (local editing / other providers)
 
 ```bash
 git clone https://github.com/AZagatti/azagatti-skills ~/dev/azagatti-skills
@@ -38,52 +59,51 @@ git clone https://github.com/AZagatti/azagatti-skills ~/dev/azagatti-skills
 # other providers: TARGET=~/.codex/skills ~/dev/azagatti-skills/install.sh
 ```
 
-`install.sh` symlinks (not copies), so the repo stays the single source of truth.
-- **Update:** `./update.sh` (git pull + re-link).
-- **Uninstall:** `./uninstall.sh` (removes only the symlinks pointing back into this repo).
+`install.sh` symlinks (repo stays the single source of truth). Update: `./update.sh`. Uninstall: `./uninstall.sh`.
+
+### Option C — skills.sh CLI
+
+```bash
+npx skills add AZagatti/azagatti-skills
+```
+
+This also bootstraps the [skills.sh](https://skills.sh/AZagatti/azagatti-skills) directory page (it's populated by install telemetry — the badge above goes live after the first `npx skills add`).
 
 ## Why these exist
 
-These aren't wrappers — they don't run the CLIs for you. They're **knowledge**: each was built by actually running the target CLI dozens of times and recording what really happens (e.g. "a Grok review that runs `git diff` returns `Cancelled` and no-ops under default perms — pass `--always-approve`"; "Antigravity ignores your cwd and writes to a scratch dir unless you `--add-dir`"). The goal is that a fresh agent driving these CLIs gets it right the first time instead of rediscovering the gotchas.
+They aren't wrappers — they don't run the CLIs for you. They're **knowledge**: each was built by running the target CLI dozens of times and recording what really happens (e.g. "a Grok review that runs `git diff` returns `Cancelled` and no-ops under default perms — pass `--always-approve`"; "Antigravity ignores your cwd and writes to a scratch dir unless you `--add-dir`"). A fresh agent gets it right the first time instead of rediscovering the gotchas.
+
+## Versioning & releases
+
+Versioning is **plugin-level** (`version` in `.claude-plugin/plugin.json`, mirrored in `marketplace.json`), tracked in [`CHANGELOG.md`](CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com) + [SemVer](https://semver.org)).
+
+**Automated with [release-please](https://github.com/googleapis/release-please)** — commit to `main` with [Conventional Commits](https://www.conventionalcommits.org) (`feat:` → minor, `fix:` → patch, `feat!:` → major). The action opens a release PR that bumps both manifests + the changelog; merging it tags `vX.Y.Z` and publishes the GitHub Release. Manual fallback: `scripts/release.sh x.y.z`.
+
+**CI** ([`ci.yml`](.github/workflows/ci.yml)) validates every PR: skill frontmatter, anchor resolution, marketplace registration, version sync, JSON, and ShellCheck (`scripts/validate-skills.py`).
 
 ## Layout
 
 ```
 azagatti-skills/
-├── .claude-plugin/
-│   ├── marketplace.json   # makes the repo an installable marketplace
-│   └── plugin.json        # the headless-clis plugin manifest (version lives here)
-├── install.sh / update.sh / uninstall.sh   # symlink flow (Option B)
-├── scripts/release.sh     # bump version + tag + GitHub Release
-├── CHANGELOG.md
-├── skills/
-│   ├── codex-exec/       {SKILL.md, reference.md}
-│   ├── claude-headless/  {SKILL.md, reference.md}
-│   ├── grok-headless/    {SKILL.md, reference.md}
-│   └── agy-headless/     {SKILL.md, reference.md}
-└── README.md
+├── .claude-plugin/{marketplace.json, plugin.json}   # marketplace (generic) → headless-clis plugin
+├── .github/{workflows/{ci,release-please}.yml, ISSUE_TEMPLATE/, dependabot.yml, CODEOWNERS, ...}
+├── scripts/{validate-skills.py, doctor.sh, new-skill.sh, release.sh}
+├── template/{SKILL.md, reference.md}                # scaffold for new skills
+├── docs/{cli-comparison.md, safety.md}
+├── install.sh / update.sh / uninstall.sh
+├── CHANGELOG.md · CONTRIBUTING.md · SECURITY.md · CODE_OF_CONDUCT.md
+└── skills/
+    ├── headless-delegate/  {SKILL.md}
+    ├── codex-exec/         {SKILL.md, reference.md}
+    ├── claude-headless/    {SKILL.md, reference.md}
+    ├── grok-headless/      {SKILL.md, reference.md}
+    └── agy-headless/       {SKILL.md, reference.md}
 ```
 
-## Versioning & releases
+## Contributing
 
-Versioning is **plugin-level** (one version for the whole `headless-clis` plugin, matching how [mattpocock/skills](https://github.com/mattpocock/skills) and [Flagrare/agent-skills](https://github.com/Flagrare/agent-skills) do it) — the source of truth is `version` in `.claude-plugin/plugin.json`, mirrored in `marketplace.json`. Changes are recorded in [`CHANGELOG.md`](./CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com) + [SemVer](https://semver.org)).
-
-**Releases are automated with [release-please](https://github.com/googleapis/release-please)** (`release-type: simple` — language-agnostic, no Node/Cargo needed). Commit to `main` with [Conventional Commits](https://www.conventionalcommits.org):
-
-- `feat: …` → minor bump · `fix: …` → patch bump · `feat!:` / `BREAKING CHANGE:` → major.
-- The `release-please` GitHub Action opens/updates a **release PR** that bumps the version in both manifests, updates `CHANGELOG.md`, and — on merge — tags `vX.Y.Z` and publishes the GitHub Release.
-- Marketplace users get it via `/plugin marketplace update azagatti-skills`.
-
-> Requires the repo setting **Settings → Actions → General → Workflow permissions → "Allow GitHub Actions to create and approve pull requests"** (enabled for this repo).
-
-**Manual fallback** (no CI): add a `## [x.y.z]` section to `CHANGELOG.md`, then run `scripts/release.sh x.y.z`.
-
-## Contributing / adding a skill
-
-1. Add `skills/<name>/SKILL.md` (+ optional `reference.md`).
-2. Append `"./skills/<name>"` to the `headless-clis` plugin's `skills` array in `.claude-plugin/marketplace.json`.
-3. Verify behavior against the real CLI before documenting it — these skills earn trust by being empirical, not aspirational.
+See [CONTRIBUTING.md](CONTRIBUTING.md). The bar is **empirical accuracy** — verify every behavioral claim against the real CLI and note the version. Use `scripts/new-skill.sh <name>` to scaffold, and `python3 scripts/validate-skills.py` before opening a PR.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT — see [LICENSE](LICENSE).
