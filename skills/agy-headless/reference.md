@@ -74,6 +74,10 @@ Plain text on stdout — the assistant's response. **No JSON/structured mode.** 
 - **No `--effort` / `--reasoning-effort`** — to change effort, pick a different `(Low|Medium|High)` model variant. Effort is a ceiling scaled by task (see the other headless skills), so lower tiers only differ on hard tasks.
 - The lineup drifts (Antigravity is new and Google-managed) — re-run `agy models` rather than trusting this table.
 
+## Vision (image input)
+
+Image support is **per-model, not a CLI feature** — and it matters most here because `agy` is multi-vendor. There is no `--image` flag: put the image under `--add-dir` and name it in the prompt; a multimodal model reads it. Some text-only models can't see images, so pick a multimodal model when the task needs vision.
+
 ## Setup / auth
 
 - `agy` on PATH (`agy --version`); logs in with a Google/Antigravity account. `agy install` configures shell/env; `agy update` upgrades.

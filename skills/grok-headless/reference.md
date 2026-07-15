@@ -102,6 +102,10 @@ The levels are **distinct budgets, not aliases** — but effort is a *ceiling/bi
 
 > The wider xAI **API** (raw `api.x.ai` with an API key — `grok-4.3`, `grok-4.20-*`, `grok-3-mini`, etc., per [xAI docs](https://docs.x.ai/docs/models)) is a **separate surface** and is **not** selectable through `grok -m` on a grok.com login. A different account/plan may expose a different set — trust that account's `grok models` output, not this table.
 
+## Vision (image input)
+
+Image support is **per-model, not a CLI feature.** There is no `--image` flag — put the image file in the workspace (`--cwd`) and name it in the prompt; a multimodal model reads it. Grok's models are multimodal and see it; some text-only models (on other CLIs) can't. If you need vision, use a multimodal model.
+
 ## Setup / auth
 
 - `grok` on PATH (`grok --version`); `grok login` / `grok logout` manage auth (here: logged in with grok.com). `grok inspect` shows the config Grok discovers for a directory.
