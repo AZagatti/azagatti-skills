@@ -38,7 +38,9 @@ git clone https://github.com/AZagatti/azagatti-skills ~/dev/azagatti-skills
 # other providers: TARGET=~/.codex/skills ~/dev/azagatti-skills/install.sh
 ```
 
-`install.sh` symlinks (not copies), so the repo stays the single source of truth. Re-run after adding a skill. Uninstall by removing the symlinks it created.
+`install.sh` symlinks (not copies), so the repo stays the single source of truth.
+- **Update:** `./update.sh` (git pull + re-link).
+- **Uninstall:** `./uninstall.sh` (removes only the symlinks pointing back into this repo).
 
 ## Why these exist
 
@@ -48,8 +50,12 @@ These aren't wrappers — they don't run the CLIs for you. They're **knowledge**
 
 ```
 azagatti-skills/
-├── .claude-plugin/marketplace.json   # makes the repo an installable marketplace
-├── install.sh                        # symlink installer (Option B)
+├── .claude-plugin/
+│   ├── marketplace.json   # makes the repo an installable marketplace
+│   └── plugin.json        # the headless-clis plugin manifest (version lives here)
+├── install.sh / update.sh / uninstall.sh   # symlink flow (Option B)
+├── scripts/release.sh     # bump version + tag + GitHub Release
+├── CHANGELOG.md
 ├── skills/
 │   ├── codex-exec/       {SKILL.md, reference.md}
 │   ├── claude-headless/  {SKILL.md, reference.md}
@@ -57,6 +63,12 @@ azagatti-skills/
 │   └── agy-headless/     {SKILL.md, reference.md}
 └── README.md
 ```
+
+## Versioning & releases
+
+Versioning is **plugin-level** (one version for the whole `headless-clis` plugin, matching how [mattpocock/skills](https://github.com/mattpocock/skills) and [Flagrare/agent-skills](https://github.com/Flagrare/agent-skills) do it) — the source of truth is `version` in `.claude-plugin/plugin.json`, mirrored in `marketplace.json`. Changes are recorded in [`CHANGELOG.md`](./CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com) + [SemVer](https://semver.org)).
+
+To cut a release: add a `## [x.y.z]` section to `CHANGELOG.md`, then run `scripts/release.sh x.y.z` — it bumps both manifests, commits, tags `vx.y.z`, pushes, and creates the GitHub Release from the changelog notes. Marketplace users get the new version on `/plugin marketplace update azagatti-skills`.
 
 ## Contributing / adding a skill
 

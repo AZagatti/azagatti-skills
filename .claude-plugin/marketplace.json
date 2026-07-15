@@ -2,7 +2,7 @@
   "name": "azagatti-skills",
   "owner": {
     "name": "Andre Zagatti",
-    "email": "andre.zagatti1@gmail.com"
+    "url": "https://github.com/AZagatti"
   },
   "metadata": {
     "description": "Skills for driving coding CLIs headlessly as delegated agents",
@@ -14,6 +14,8 @@
       "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Each skill documents that CLI's real headless invocation, permission model, output shape, and model/effort support, verified empirically.",
       "source": "./",
       "strict": false,
+      "category": "development",
+      "keywords": ["cli", "headless", "codex", "claude-code", "grok", "antigravity", "delegation"],
       "skills": [
         "./skills/codex-exec",
         "./skills/claude-headless",
