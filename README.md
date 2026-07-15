@@ -68,7 +68,15 @@ azagatti-skills/
 
 Versioning is **plugin-level** (one version for the whole `headless-clis` plugin, matching how [mattpocock/skills](https://github.com/mattpocock/skills) and [Flagrare/agent-skills](https://github.com/Flagrare/agent-skills) do it) — the source of truth is `version` in `.claude-plugin/plugin.json`, mirrored in `marketplace.json`. Changes are recorded in [`CHANGELOG.md`](./CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com) + [SemVer](https://semver.org)).
 
-To cut a release: add a `## [x.y.z]` section to `CHANGELOG.md`, then run `scripts/release.sh x.y.z` — it bumps both manifests, commits, tags `vx.y.z`, pushes, and creates the GitHub Release from the changelog notes. Marketplace users get the new version on `/plugin marketplace update azagatti-skills`.
+**Releases are automated with [release-please](https://github.com/googleapis/release-please)** (`release-type: simple` — language-agnostic, no Node/Cargo needed). Commit to `main` with [Conventional Commits](https://www.conventionalcommits.org):
+
+- `feat: …` → minor bump · `fix: …` → patch bump · `feat!:` / `BREAKING CHANGE:` → major.
+- The `release-please` GitHub Action opens/updates a **release PR** that bumps the version in both manifests, updates `CHANGELOG.md`, and — on merge — tags `vX.Y.Z` and publishes the GitHub Release.
+- Marketplace users get it via `/plugin marketplace update azagatti-skills`.
+
+> Requires the repo setting **Settings → Actions → General → Workflow permissions → "Allow GitHub Actions to create and approve pull requests"** (enabled for this repo).
+
+**Manual fallback** (no CI): add a `## [x.y.z]` section to `CHANGELOG.md`, then run `scripts/release.sh x.y.z`.
 
 ## Contributing / adding a skill
 
