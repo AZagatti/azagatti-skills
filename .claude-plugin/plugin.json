@@ -1,6 +1,6 @@
 {
   "name": "headless-clis",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Empirically-verified per-CLI invocation, permission model, output shape, and model/effort support.",
   "author": {
     "name": "Andre Zagatti",

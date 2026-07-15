@@ -5,6 +5,19 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.2.0](https://github.com/AZagatti/azagatti-skills/compare/azagatti-skills-v0.1.0...azagatti-skills-v0.2.0) (2026-07-15)
+
+
+### Features
+
+* add headless-delegate router skill + cross-CLI comparison & safety docs ([bbf4f78](https://github.com/AZagatti/azagatti-skills/commit/bbf4f788527181af91a5033656e6234d7ce1c366))
+* headless coding-CLI skills (codex, claude, grok, antigravity) ([0f28bf2](https://github.com/AZagatti/azagatti-skills/commit/0f28bf2d4d1a9fc9139848c1a4d384eb9b4d2382))
+
+
+### Bug Fixes
+
+* correctness fixes from cross-vendor review (validator anchors, new-skill escaping, doctor auth claim, safety isolation, comparison facts, release manifest sync, CI link-check) ([745569b](https://github.com/AZagatti/azagatti-skills/commit/745569b29272d127e278a010a4f5329ff61229fd))
+
 ## [Unreleased]
 
 ## [0.1.0] — 2026-07-14
