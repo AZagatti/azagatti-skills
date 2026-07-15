@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Preflight for the headless-CLI skills: which delegate CLIs are installed, their
-# version, whether they're authenticated, and the safest starter command for each.
-# Read-only — makes no changes, spawns no agent.
+# version, and the safest starter command for each. It does NOT verify authentication
+# (run each CLI's own login/doctor for that). Read-only — makes no changes, spawns no agent.
 set -uo pipefail
 
 ok() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
@@ -33,6 +33,6 @@ check "agy-headless (Antigravity)"  agy   "agy --version" \
   'agy --add-dir <repo> --print-timeout 3m -p "<task>"   # no cwd → --add-dir'
 
 echo
-echo "Model lists are account/version-specific — verify at runtime:"
-echo "  codex: (see reference)   grok models   agy models"
+echo "Auth is NOT checked above. If a run hangs or 401s, log in: codex login / (in claude) /login / grok login / agy login"
+echo "Model lists are account/version-specific — verify at runtime: codex (see reference) · grok models · agy models"
 echo "Full safety rules: docs/safety.md · comparison: docs/cli-comparison.md"

@@ -12,11 +12,11 @@ The four skills document four CLIs that all do "run an agent non-interactively."
 | Default write policy | read-only | reads OK, **writes denied** | reads OK, **writes + command-exec denied** | needs `--mode accept-edits` / approve |
 | Silent-fail signal | (errors loudly) | `permission_denials[]`, `is_error:false` | `stopReason:"Cancelled"` | **hang → timeout** |
 | Grant writes | `-s workspace-write` | `--permission-mode acceptEdits` | `--always-approve` / `--allow` | `--mode accept-edits` / `--dangerously-skip-permissions` |
-| Structured output | `--json` / `-o` | `--output-format json` (`.result`) | `--output-format json` (`.text/.thought/.stopReason`) | **plain text only** |
-| Reasoning effort | `-c model_reasoning_effort` (`none`…`max`, per-model) | `--effort` (per-model; haiku/sonnet-4.5 = none) | `--reasoning-effort` (per-model; `grok-4.5` rejects `none`) | **baked into model name** (`… (High)`) |
+| Structured output | `--json` (JSONL events); `-o` = plain final message | `--output-format json` (`.result`) | `--output-format json` (`.text/.thought/.stopReason`) | **plain text only** |
+| Reasoning effort | `-c model_reasoning_effort` (`none`…`ultra`, per-model) | `--effort` (per-model; haiku & sonnet-4.5 = **no effort support**) | `--reasoning-effort` (per-model; `grok-4.5` rejects `none`) | **baked into model name** (`… (High)`) |
 | Session resume | `codex exec resume` | `--resume` / `--continue` | `-c` / `-r <id>` | `-c` / `--conversation <id>` |
 | Built-in PR review | `review --base`/`--uncommitted` | — | — | — |
-| Web search | via `gh`/tools | yes | yes | yes |
+| Web search | via `gh`/tools | yes | yes | not documented |
 
 ## Which one?
 
@@ -26,7 +26,7 @@ Need a second opinion from a DIFFERENT vendor than you're running?
 ├── xAI cross-vendor take on a diff ................. grok-headless
 └── Gemini / Claude / GPT-OSS behind ONE login ...... agy-headless
 
-Need structured JSON to script against? ............. claude-headless or grok-headless (agy is plain-text only)
+Need structured JSON to script against? ............. claude-headless / grok-headless (single-result JSON), or codex-exec --json (JSONL events); agy = plain text only
 Need cheap/parallel bulk work? ...................... claude-headless --model haiku  (or a cheap model on any)
 Need it to actually EDIT files / run tests? ......... codex-exec -s workspace-write  (strongest repo tooling)
 Multi-model comparison from one tool? ............... agy-headless  (grok models / picks vendor per model name)

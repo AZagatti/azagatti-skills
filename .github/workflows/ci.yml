@@ -42,9 +42,11 @@ jobs:
             dir=$(dirname "$md")
             while IFS= read -r target; do
               [ -z "$target" ] && continue
-              case "$target" in http*|\#*) continue ;; esac
+              target="${target%% *}"                               # strip optional link title: (path "title")
+              case "$target" in \#*|*://*|mailto:*|tel:*) continue ;; esac
               path="${target%%#*}"
               [ -z "$path" ] && continue
+              case "$path" in /*) continue ;; esac                 # skip absolute paths (not repo-relative)
               if [ ! -e "$dir/$path" ]; then echo "$md → missing link target: $path"; fail=1; fi
             done < <(grep -oE '\]\(([^)]+)\)' "$md" | sed -E 's/^\]\(//; s/\)$//')
           done < <(git ls-files '*.md')

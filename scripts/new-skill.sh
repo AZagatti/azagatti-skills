@@ -14,13 +14,14 @@ mkdir -p "$DEST"
 for f in SKILL.md reference.md; do
   sed -e "s/SKILL_NAME/$NAME/g" "$REPO/template/$f" > "$DEST/$f"
 done
-# fill the description line
+# fill the description line — json.dumps() gives a valid double-quoted YAML scalar;
+# the callable replacement avoids re.sub() interpreting backslashes in DESC.
 python3 - "$DEST/SKILL.md" "$DESC" <<'PY'
-import re,sys
-p,desc=sys.argv[1],sys.argv[2]
-t=open(p).read()
-t=re.sub(r'^description:.*$', f'description: "{desc}"', t, count=1, flags=re.M)
-open(p,'w').write(t)
+import re, sys, json
+p, desc = sys.argv[1], sys.argv[2]
+t = open(p).read()
+t = re.sub(r'^description:.*$', lambda _m: 'description: ' + json.dumps(desc), t, count=1, flags=re.M)
+open(p, 'w').write(t)
 PY
 
 # register in marketplace.json (append to the first plugin's skills array)

@@ -43,7 +43,7 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     for line in m.group(1).splitlines():
         km = re.match(r'^(\w+):\s*(.*)$', line)
         if km:
-            val = km.group(2).strip().strip('"')
+            val = km.group(2).strip().strip('"').replace('\\"', '"')
             fm[km.group(1)] = val
     return fm
 
@@ -114,11 +114,14 @@ for d in skill_dirs:
     if name not in registered:
         err(f"{name}: not registered in marketplace.json plugins[].skills")
 
-    # anchor resolution: SKILL.md → reference.md
+    # anchor resolution: SKILL.md → reference.md (capture the FULL fragment, incl _ and any case)
     ref = d / "reference.md"
-    if ref.exists():
+    ref_links = re.findall(r"\]\(reference\.md#([^)\s]+)\)", text)
+    if ref_links and not ref.exists():
+        err(f"{name}: SKILL.md links reference.md#... but reference.md is missing")
+    elif ref.exists():
         slugs = {gh_slug(h) for h in re.findall(r"^#{1,6}\s+(.*)$", ref.read_text(), re.M)}
-        for anchor in re.findall(r"\]\(reference\.md#([a-z0-9\-]+)\)", text):
+        for anchor in ref_links:
             if anchor not in slugs:
                 err(f"{name}: SKILL.md links reference.md#{anchor} but no heading has that slug")
 

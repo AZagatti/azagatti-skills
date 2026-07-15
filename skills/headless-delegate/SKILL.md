@@ -17,18 +17,18 @@ Cross-vendor SECOND OPINION on a diff/design (different vendor than you're runni
   • xAI take .................................... grok-headless      (grok -p)
   • Gemini / Claude / GPT-OSS via one login ..... agy-headless      (agy -p)
 
-Structured JSON to script against .............. claude-headless or grok-headless   (agy = plain text only)
+Structured JSON to script against .............. claude-headless / grok-headless (single-result) or codex-exec --json (JSONL); agy = plain text
 Cheap / parallel bulk work ..................... claude-headless --model haiku (or a cheap model on any)
 Actually EDIT files / run tests ................ codex-exec -s workspace-write (strongest repo tooling)
 Same task across many models ................... agy-headless (multi-vendor behind one login)
 ```
 
-Full matrix (workspace flag, default write policy, silent-fail signal, JSON, effort, resume): **[docs/cli-comparison.md](../../docs/cli-comparison.md)**.
+Full matrix (workspace flag, default write policy, silent-fail signal, JSON, effort, resume): **[cli-comparison.md](https://github.com/AZagatti/azagatti-skills/blob/main/docs/cli-comparison.md)**.
 
 ## Two rules that always apply
 
 1. **Cross-vendor is the value.** Delegating a model to *itself* for a "second opinion" adds cost, not perspective. If you're running Claude, get the second opinion from Codex/Grok/Antigravity — not another Claude.
-2. **Safety is shared.** Whichever you pick, follow least-privilege defaults, verify writes with `git diff` (not the model's prose), and cap turns/budget/timeout. See **[docs/safety.md](../../docs/safety.md)**.
+2. **Safety is shared.** Whichever you pick, follow least-privilege defaults, verify writes with `git diff` (not the model's prose), and cap turns/budget/timeout. See **[safety.md](https://github.com/AZagatti/azagatti-skills/blob/main/docs/safety.md)**.
 
 ## Hand off
 

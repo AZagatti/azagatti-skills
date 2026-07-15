@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Cut a release: bump the version in plugin.json + marketplace.json, tag, push, and
+# MANUAL FALLBACK ONLY — prefer the automated release-please flow (merge its release PR).
+# Use this when CI is unavailable. It keeps plugin.json, marketplace.json, AND
+# .release-please-manifest.json in sync so it doesn't fight release-please afterward.
+#
+# Cut a release: bump the version in the three manifests, tag, push, and
 # create a GitHub Release from the matching CHANGELOG section.
 #
 # Usage:
@@ -18,10 +22,11 @@ grep -q "## \[$VERSION\]" CHANGELOG.md || { echo "CHANGELOG.md has no '## [$VERS
 
 echo "Bumping to $VERSION…"
 tmp=$(mktemp)
-jq --arg v "$VERSION" '.version = $v'          .claude-plugin/plugin.json     > "$tmp" && mv "$tmp" .claude-plugin/plugin.json
-jq --arg v "$VERSION" '.metadata.version = $v' .claude-plugin/marketplace.json > "$tmp" && mv "$tmp" .claude-plugin/marketplace.json
+jq --arg v "$VERSION" '.version = $v'          .claude-plugin/plugin.json      > "$tmp" && mv "$tmp" .claude-plugin/plugin.json
+jq --arg v "$VERSION" '.metadata.version = $v' .claude-plugin/marketplace.json  > "$tmp" && mv "$tmp" .claude-plugin/marketplace.json
+jq --arg v "$VERSION" '.["."] = $v'            .release-please-manifest.json    > "$tmp" && mv "$tmp" .release-please-manifest.json  # keep release-please in sync
 
-git add .claude-plugin/plugin.json .claude-plugin/marketplace.json CHANGELOG.md
+git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .release-please-manifest.json CHANGELOG.md
 git commit -m "chore(release): v$VERSION"
 git tag -a "v$VERSION" -m "v$VERSION"
 git push origin main "v$VERSION"
