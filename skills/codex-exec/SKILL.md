@@ -1,6 +1,6 @@
 ---
 name: codex-exec
-description: "Delegate a task to the OpenAI Codex CLI (`codex exec`) as an auxiliary — a second agentic model that helps implement, reviews your branch/PR, investigates, or gives a second opinion — then read its output and act on it. Invoke as `/codex-exec [model=<id>] <what you want Codex to do>`, e.g. `/codex-exec model=gpt-5.6-terra help implement the parser` or `/codex-exec model=gpt-5.6-sol review your PR`. Triggers on: codex, codex exec, ask codex, run codex, codex review, second opinion, delegate to codex, use codex as a helper/auxiliary/subagent."
+description: "Delegate to the OpenAI Codex CLI (`codex exec`) as a second agentic model — implement, review a branch/PR, investigate, or give a cross-vendor second opinion. Use when the user asks to run or ask Codex, get a Codex PR review, delegate to Codex, or wants an OpenAI second opinion; or invokes `/codex-exec [model=<id>] <task>`."
 ---
 
 # codex-exec — Codex as an auxiliary

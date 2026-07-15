@@ -1,6 +1,6 @@
 ---
 name: headless-delegate
-description: "Router for delegating a task to another coding CLI headlessly — pick the right vendor/CLI (OpenAI Codex, Claude, xAI Grok, Google Antigravity) for a second opinion, cross-vendor review, cheap/parallel work, or repo edits, then hand off to that CLI's skill. Use when the user says: get a second opinion, ask another model, cross-check this, delegate this, which CLI should I use, run a cross-vendor review, or when you want an independent take from a different vendor than the one you're running."
+description: "Router: pick which coding CLI to delegate to (OpenAI Codex, Claude, xAI Grok, Google Antigravity) and hand off. Use when the user wants a second opinion, a cross-vendor review, to ask or delegate to another model, an independent take from a different vendor, or asks which CLI to use."
 ---
 
 # headless-delegate — pick the right CLI, then hand off

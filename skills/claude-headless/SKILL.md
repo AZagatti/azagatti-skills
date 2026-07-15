@@ -1,6 +1,6 @@
 ---
 name: claude-headless
-description: "Drive Claude Code non-interactively via `claude -p` (print/headless mode) — spawn a separate Claude session to delegate work, run a cheaper/parallel model, get isolated fresh-context output, or produce structured JSON for scripts/CI. Invoke as `/claude-headless [model=<alias>] [effort=<level>] <task>`, e.g. `/claude-headless model=haiku summarize this log` or `/claude-headless model=sonnet effort=low review src/`. Triggers on: claude -p, claude --print, headless claude, claude print mode, claude SDK mode, run claude non-interactively, claude in a script/CI/cron, delegate to a claude subprocess, structured json output from claude."
+description: "Drive Claude Code non-interactively with `claude -p` (headless/print mode) — a separate Claude session for delegated, cheaper/parallel, isolated, or JSON-scriptable runs. Use when the user mentions claude -p / --print, headless or SDK mode, running Claude in a script/CI/cron, or wanting structured JSON from Claude; or invokes `/claude-headless [model=<alias>] [effort=<level>] <task>`."
 ---
 
 # claude-headless — driving `claude -p`

@@ -11,7 +11,7 @@ Model tables and account-visible model lists are **account/version-specific** �
 ## Adding a skill
 
 1. `scripts/new-skill.sh <name> "<one-line description>"` — scaffolds `skills/<name>/SKILL.md` + `reference.md` from `template/` **and auto-registers it** in `.claude-plugin/marketplace.json`.
-2. Write the skill following the house pattern (see any existing skill): **Mental model → Quick reference → Parse → Pre-flight → Command → Run → After → Failure notes**, with a concise `SKILL.md` and detail deferred to `reference.md`. Follow the principles in [`docs/writing-skills.md`](docs/writing-skills.md).
+2. Write the skill following the house pattern (see any existing skill): **Mental model → Quick reference → Parse → Pre-flight → Command → Run → After → Failure notes**, with a concise `SKILL.md` and detail deferred to `reference.md`. For skill-writing craft (descriptions = triggers, progressive disclosure, leading words, no-op pruning), read Matt Pocock's [writing-great-skills](https://github.com/mattpocock/skills/blob/main/skills/productivity/writing-great-skills/SKILL.md).
 3. Run `python3 scripts/validate-skills.py` — it must pass (frontmatter, `name`==dir, anchors resolve, registered, version sync).
 4. Link the shared [`docs/safety.md`](docs/safety.md) rather than re-writing safety notes.
 

@@ -106,7 +106,7 @@ azagatti-skills/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the house style in [docs/writing-skills.md](docs/writing-skills.md). The bar is **empirical accuracy** — verify every behavioral claim against the real CLI and note the version. Use `scripts/new-skill.sh <name> "<description>"` to scaffold, and `python3 scripts/validate-skills.py` before opening a PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md). The bar is **empirical accuracy** — verify every behavioral claim against the real CLI and note the version. Use `scripts/new-skill.sh <name> "<description>"` to scaffold, and `python3 scripts/validate-skills.py` before opening a PR.
 
 ## License
 

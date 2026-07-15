@@ -1,6 +1,6 @@
 ---
 name: agy-headless
-description: "Drive Google's Antigravity CLI (`agy`) non-interactively via `agy -p` (print/headless) — spawn a separate multi-vendor agent (Gemini / Claude / GPT-OSS behind one login) to delegate a task, get a cross-vendor second opinion, or run a cheaper model. Invoke as `/agy-headless [model=<name>] [dir=<path>] <task>`, e.g. `/agy-headless dir=. review the auth code` or `/agy-headless model=\"Claude Opus 4.6 (Thinking)\" explain this bug`. Triggers on: agy, antigravity, antigravity cli, ask agy, run antigravity, headless antigravity, gemini cli successor, delegate to gemini/antigravity."
+description: "Drive Google's Antigravity CLI with `agy -p` (headless) — a separate multi-vendor agent (Gemini / Claude / GPT-OSS via one login) for a delegated task, cross-vendor second opinion, or cheaper model. Use when the user mentions agy or Antigravity (the Gemini CLI successor), or wants to delegate to Gemini/Antigravity; or invokes `/agy-headless [model=<name>] [dir=<path>] <task>`."
 ---
 
 # agy-headless — driving `agy -p` (Antigravity)

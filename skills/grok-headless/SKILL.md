@@ -1,6 +1,6 @@
 ---
 name: grok-headless
-description: "Drive xAI's Grok Build CLI non-interactively via `grok -p` (single-turn / headless) — spawn a separate Grok agent to delegate a task, get a second opinion from Grok, run a cheaper model, or produce structured JSON for scripts/CI. Invoke as `/grok-headless [model=<id>] [effort=<level>] <task>`, e.g. `/grok-headless review src/` or `/grok-headless model=grok-4.5 effort=high explain this bug`. Triggers on: grok, grok -p, grok cli, grok build, grok agent, ask grok, run grok, headless grok, delegate to grok, second opinion from grok, xai grok cli."
+description: "Drive xAI's Grok Build CLI non-interactively with `grok -p` (headless) — a separate Grok agent for a delegated task, a cross-vendor second opinion, a cheaper model, or JSON output. Use when the user asks to run or ask Grok, mentions grok -p / Grok Build, or wants a Grok second opinion; or invokes `/grok-headless [model=<id>] [effort=<level>] <task>`."
 ---
 
 # grok-headless — driving `grok -p`
