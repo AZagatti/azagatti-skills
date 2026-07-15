@@ -41,7 +41,7 @@ def parse_frontmatter(text: str) -> dict[str, str]:
         return {}
     fm: dict[str, str] = {}
     for line in m.group(1).splitlines():
-        km = re.match(r'^(\w+):\s*(.*)$', line)
+        km = re.match(r'^([\w-]+):\s*(.*)$', line)
         if km:
             val = km.group(2).strip().strip('"').replace('\\"', '"')
             fm[km.group(1)] = val
@@ -108,7 +108,9 @@ for d in skill_dirs:
             err(f"{name}: description is {len(desc)} chars (max 1024)")
         elif len(desc) > 700:
             warn(f"{name}: description is {len(desc)} chars — consider tightening (<~500)")
-        if not re.search(r"\b(use when|triggers? on|invoke|when the user)\b", desc, re.I):
+        # user-invoked (router) skills have a human-facing description — no trigger phrases expected
+        user_invoked = str(fm.get("disable-model-invocation", "")).lower() == "true"
+        if not user_invoked and not re.search(r"\b(use when|triggers? on|invoke|when the user)\b", desc, re.I):
             warn(f"{name}: description has no explicit 'use when'/'triggers on' phrase")
 
     if name not in registered:
