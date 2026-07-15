@@ -92,7 +92,7 @@ azagatti-skills/
 ├── .claude-plugin/{marketplace.json, plugin.json}   # marketplace (generic) → headless-clis plugin
 ├── .github/{workflows/{ci,release-please}.yml, ISSUE_TEMPLATE/, dependabot.yml, CODEOWNERS, ...}
 ├── scripts/{validate-skills.py, doctor.sh, new-skill.sh, release.sh}
-├── template/{SKILL.md, reference.md}                # scaffold for new skills
+├── template/{SKILL.md.tmpl, reference.md.tmpl}      # scaffold for new skills (.tmpl so scanners skip it)
 ├── docs/{cli-comparison.md, safety.md}
 ├── install.sh / update.sh / uninstall.sh
 ├── CHANGELOG.md · CONTRIBUTING.md · SECURITY.md · CODE_OF_CONDUCT.md

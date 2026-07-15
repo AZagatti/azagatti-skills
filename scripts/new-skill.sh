@@ -11,8 +11,10 @@ DEST="$REPO/skills/$NAME"
 [ -e "$DEST" ] && { echo "skills/$NAME already exists"; exit 1; }
 
 mkdir -p "$DEST"
+# template files use a .tmpl suffix so scanners (skills.sh) don't discover the
+# scaffold itself as a skill — the CLI keys on any file literally named *SKILL.md.
 for f in SKILL.md reference.md; do
-  sed -e "s/SKILL_NAME/$NAME/g" "$REPO/template/$f" > "$DEST/$f"
+  sed -e "s/SKILL_NAME/$NAME/g" "$REPO/template/$f.tmpl" > "$DEST/$f"
 done
 # fill the description line — json.dumps() gives a valid double-quoted YAML scalar;
 # the callable replacement avoids re.sub() interpreting backslashes in DESC.
