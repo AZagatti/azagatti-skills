@@ -5,18 +5,19 @@
     "url": "https://github.com/AZagatti"
   },
   "metadata": {
-    "description": "Skills for driving coding CLIs headlessly as delegated agents",
+    "description": "Andre Zagatti's Claude Code skills — a growing collection, grouped into plugins by category.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "headless-clis",
-      "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Each skill documents that CLI's real headless invocation, permission model, output shape, and model/effort support, verified empirically.",
+      "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Each skill documents that CLI's real headless invocation, permission model, output shape, and model/effort support, verified empirically. Includes a router skill to pick the right CLI.",
       "source": "./",
       "strict": false,
       "category": "development",
       "keywords": ["cli", "headless", "codex", "claude-code", "grok", "antigravity", "delegation"],
       "skills": [
+        "./skills/headless-delegate",
         "./skills/codex-exec",
         "./skills/claude-headless",
         "./skills/grok-headless",
