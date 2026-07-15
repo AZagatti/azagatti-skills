@@ -31,7 +31,7 @@ Drive other coding CLIs **headlessly** — so one agent can delegate a self-cont
 
 ```bash
 # 1. install (any of the options below)
-# 2. sanity-check which delegate CLIs you have + their auth:
+# 2. sanity-check which delegate CLIs you have (name, version, safe starter command):
 ./scripts/doctor.sh
 # 3. in Claude Code, ask for a delegation — the skills route it:
 #    "get a second opinion from Codex on this diff"  → codex-exec
@@ -40,34 +40,38 @@ Drive other coding CLIs **headlessly** — so one agent can delegate a self-cont
 
 ## Install
 
-### Option A — plugin marketplace (recommended)
+### Recommended: skills.sh (works with every agent)
 
-Versioned via git, no symlinks. In Claude Code:
+```bash
+npx skills add AZagatti/azagatti-skills
+```
+
+The [skills.sh](https://skills.sh/AZagatti/azagatti-skills) CLI installs into whichever agent you use (Claude Code, Codex, Grok, Antigravity, Cursor, …) and bootstraps the directory page + the badge above (populated by install telemetry — live after the first `npx skills add`). Great for per-project use.
+
+### Claude Code (native marketplace)
 
 ```
 /plugin marketplace add AZagatti/azagatti-skills
 /plugin install headless-clis@azagatti-skills
 ```
 
-Update with `/plugin marketplace update azagatti-skills`. Skills load from the plugin cache — they don't touch your personal `~/.claude/skills/`.
+Update with `/plugin marketplace update azagatti-skills`. Loads from the plugin cache — doesn't touch `~/.claude/skills/`.
 
-### Option B — symlink (local editing / other providers)
+### Any agent, via symlink
+
+`install.sh` clones-and-symlinks so the repo stays the single source of truth. Point it at the target agent's skills dir with `TARGET`:
 
 ```bash
 git clone https://github.com/AZagatti/azagatti-skills ~/dev/azagatti-skills
-~/dev/azagatti-skills/install.sh              # symlinks into ~/.claude/skills/
-# other providers: TARGET=~/.codex/skills ~/dev/azagatti-skills/install.sh
+~/dev/azagatti-skills/install.sh                                  # → ~/.claude/skills  (default)
+TARGET=~/.codex/skills            ~/dev/azagatti-skills/install.sh   # OpenAI Codex
+TARGET=~/.grok/skills             ~/dev/azagatti-skills/install.sh   # xAI Grok
+TARGET=~/.gemini/antigravity/skills ~/dev/azagatti-skills/install.sh # Google Antigravity
 ```
 
-`install.sh` symlinks (repo stays the single source of truth). Update: `./update.sh`. Uninstall: `./uninstall.sh`.
+Update: `./update.sh`. Uninstall: `./uninstall.sh`.
 
-### Option C — skills.sh CLI
-
-```bash
-npx skills add AZagatti/azagatti-skills
-```
-
-This also bootstraps the [skills.sh](https://skills.sh/AZagatti/azagatti-skills) directory page (it's populated by install telemetry — the badge above goes live after the first `npx skills add`).
+> Codex, Grok, and Antigravity each also have a **native plugin command** that can install this repo from git — `codex plugin marketplace add …`, `grok plugin install <git-url|path>`, `agy plugin install <plugin@marketplace>` (or `agy plugin import claude` to pull in what Claude Code already has). See each tool's own docs for exact syntax; the `TARGET=` symlink above is the tool-agnostic path.
 
 ## Why these exist
 
@@ -79,7 +83,7 @@ Versioning is **plugin-level** (`version` in `.claude-plugin/plugin.json`, mirro
 
 **Automated with [release-please](https://github.com/googleapis/release-please)** — commit to `main` with [Conventional Commits](https://www.conventionalcommits.org) (`feat:` → minor, `fix:` → patch, `feat!:` → major). The action opens a release PR that bumps both manifests + the changelog; merging it tags `vX.Y.Z` and publishes the GitHub Release. Manual fallback: `scripts/release.sh x.y.z`.
 
-**CI** ([`ci.yml`](.github/workflows/ci.yml)) validates every PR: skill frontmatter, anchor resolution, marketplace registration, version sync, JSON, and ShellCheck (`scripts/validate-skills.py`).
+**CI** ([`ci.yml`](.github/workflows/ci.yml)) validates every PR: `scripts/validate-skills.py` checks skill frontmatter, anchor resolution, marketplace registration, and version sync; separate steps run JSON parsing, ShellCheck on the shell scripts, and a markdown link check.
 
 ## Layout
 
@@ -102,7 +106,7 @@ azagatti-skills/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The bar is **empirical accuracy** — verify every behavioral claim against the real CLI and note the version. Use `scripts/new-skill.sh <name>` to scaffold, and `python3 scripts/validate-skills.py` before opening a PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the house style in [docs/writing-skills.md](docs/writing-skills.md). The bar is **empirical accuracy** — verify every behavioral claim against the real CLI and note the version. Use `scripts/new-skill.sh <name> "<description>"` to scaffold, and `python3 scripts/validate-skills.py` before opening a PR.
 
 ## License
 
