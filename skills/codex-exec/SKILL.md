@@ -1,6 +1,6 @@
 ---
 name: codex-exec
-description: "Delegate to the OpenAI Codex CLI (`codex exec`) as a second agentic model — implement, review a branch/PR, investigate, or give a cross-vendor second opinion. Use when the user asks to run or ask Codex, get a Codex PR review, delegate to Codex, or wants an OpenAI second opinion; or invokes `/codex-exec [model=<id>] <task>`."
+description: "Drive OpenAI's Codex CLI (`codex exec`) as a second agentic model — implement, review a branch/PR, investigate, or give a cross-vendor second opinion. Use when the user asks to run or ask Codex, get a Codex PR review, or wants an OpenAI second opinion; or invokes `/codex-exec [model=<id>] <task>`."
 ---
 
 # codex-exec — Codex as an auxiliary
@@ -40,7 +40,7 @@ Called with a free-form instruction, optionally prefixed by `key=value` options:
 - **No `model=`** → omit `-m`; Codex uses its configured default. Never invent a model id; pass what the user typed straight to `-m`. (Model list + per-model reasoning tiers: [reference.md → Models](reference.md#available-models-and-reasoning-effort). Reasoning is **off by default** in `exec`; dial it with `-c model_reasoning_effort="high"` — or `="none"` to force off. Exception: `gpt-5.3-codex-spark` **requires** an effort ≥ `low`, so it fails without the flag.)
 - Map `dir=<path>` → `-C <path>`. If absent, default `-C` to the **repo root / current working directory**.
 
-## 2. Pre-flight (hard gate — don't build a §3 command until this passes)
+## 2. Pre-flight (hard gate — build a §3 command only after this passes)
 
 - **Files:** resolve every path the instruction names against `-C` — actually check (`ls <path>` / `fd <name>`), don't eyeball. If one doesn't exist, **stop and ask** which repo/dir it's in (or whether the filename is wrong) — don't fire a prompt aimed at a missing file.
 - **Branch/PR review:** confirm there's a real diff before delegating:

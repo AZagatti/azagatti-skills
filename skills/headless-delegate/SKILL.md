@@ -1,6 +1,6 @@
 ---
 name: headless-delegate
-description: "Router: pick which coding CLI to delegate to (OpenAI Codex, Claude, xAI Grok, Google Antigravity) and hand off. Use when the user wants a second opinion, a cross-vendor review, to ask or delegate to another model, an independent take from a different vendor, or asks which CLI to use."
+description: "Router: choose which coding CLI (OpenAI Codex, Claude, xAI Grok, Google Antigravity) to delegate to, and hand off. Use when the user asks which CLI to use, or wants a cross-vendor second opinion without naming a specific vendor (a named vendor routes straight to its own skill)."
 ---
 
 # headless-delegate — pick the right CLI, then hand off
