@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.2.1](https://github.com/AZagatti/azagatti-skills/compare/v0.2.0...v0.2.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* rename skill template to .tmpl so skills.sh (and other *SKILL.md scanners) don't list the scaffold as a bogus skill ([9d7ea06](https://github.com/AZagatti/azagatti-skills/commit/9d7ea069dd7514cfac744a5d736352a32e8cc974))
+
 ## [0.2.0](https://github.com/AZagatti/azagatti-skills/compare/azagatti-skills-v0.1.0...azagatti-skills-v0.2.0) (2026-07-15)
 
 
