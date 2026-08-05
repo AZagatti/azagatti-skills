@@ -1,6 +1,6 @@
 # `codex exec` — full CLI reference
 
-`codex exec` (alias `codex e`) runs the [Codex CLI](https://developers.openai.com/codex/cli) non-interactively: it takes a prompt, works autonomously, streams progress to stderr, prints the final message to stdout (or emits JSONL), and exits. Verified against `codex-cli 0.145.0` on 2026-08-04; `codex doctor` reported 0.146.0 available but it was not installed during this audit. Always cross-check `codex exec --help`, `codex debug models`, and the [official CLI reference](https://learn.chatgpt.com/docs/developer-commands?surface=cli#cli-codex-exec).
+`codex exec` (alias `codex e`) runs the [Codex CLI](https://developers.openai.com/codex/cli) non-interactively: it takes a prompt, works autonomously, streams progress to stderr, prints the final message to stdout (or emits JSONL), and exits. Verified against `codex-cli 0.146.0` on 2026-08-05. Always cross-check `codex exec --help`, `codex debug models`, and the [official CLI reference](https://learn.chatgpt.com/docs/developer-commands?surface=cli#cli-codex-exec).
 
 ## Mental model: Codex is itself an agent
 
@@ -21,11 +21,10 @@
 | `--dangerously-bypass-approvals-and-sandbox, --yolo` | boolean | Bypasses approvals **and** sandbox (**high risk**) |
 | `--dangerously-bypass-hook-trust` | boolean | Runs enabled hooks without persisted trust |
 | `--ephemeral` | boolean | Don't persist session files to disk |
-| `--full-auto` | boolean | Deprecated; prefer `--sandbox workspace-write` |
 | `--ignore-rules` | boolean | Skip user/project execpolicy `.rules` files |
 | `--ignore-user-config` | boolean | Bypass `$CODEX_HOME/config.toml` (auth still uses CODEX_HOME) |
 | `--image, -i` | path[,path...] | Attach image(s) to the initial message; repeatable |
-| `--json, --experimental-json` | boolean | Newline-delimited JSON events instead of formatted text |
+| `--json` | boolean | Newline-delimited JSON events instead of formatted text |
 | `--local-provider` | `lmstudio` \| `ollama` | Local provider for `--oss` runs |
 | `--model, -m` | string | Override the model for this run |
 | `--oss` | boolean | Use a local open-source provider |
@@ -35,9 +34,12 @@
 | `--sandbox, -s` | `read-only` \| `workspace-write` \| `danger-full-access` | Sandbox policy for model-generated commands |
 | `--add-dir` | path | Extra directory writable alongside the workspace root |
 | `--skip-git-repo-check` | boolean | Allow running outside a Git repo |
+| `--strict-config` | boolean | Fail before execution when config files or `-c` contain unrecognized fields; recommended for deterministic automation |
 | `--enable` / `--disable` | FEATURE | Toggle a feature for this run (= `-c features.<name>=true/false`); repeatable |
 | `-c, --config` | key=value | Inline config override; repeatable; value parsed as TOML, dotted paths for nesting |
 | `PROMPT` | string \| `-` (stdin) | Task instruction, or `-`/piped stdin. Prompt arg + piped stdin → stdin appended as a `<stdin>` block |
+
+Hidden compatibility aliases accepted by 0.146 but omitted from visible help: deprecated `--full-auto` (prefer `--sandbox workspace-write`) and `--experimental-json` (prefer `--json`).
 
 ## Sandbox and approval modes (pick the least privilege that works)
 
@@ -77,6 +79,7 @@ codex exec resume --last --all "continue across cwd boundaries"
 
 - `codex apply <TASK_ID>` (alias `codex a`) — apply the latest diff from a **Codex cloud task**. It does not apply the last local exec diff.
 - `codex doctor` — diagnose install, updates, config, auth, and runtime health.
+- `codex update` — update the standalone CLI installation to the latest available version.
 
 ## Output modes and shape
 
@@ -137,8 +140,10 @@ codex exec -m gpt-5.6-sol -c model_reasoning_effort="max" -s read-only -C <repo>
 ## Config overrides
 
 ```bash
-codex exec -c 'model="gpt-5.6-sol"' -c 'model_reasoning_effort="low"' -s read-only "…"
+codex exec --strict-config -c 'model="gpt-5.6-sol"' -c 'model_reasoning_effort="low"' -s read-only "…"
 ```
+
+Use `--strict-config` in CI or other deterministic runs so a misspelled or retired config key fails before the model starts.
 
 ## Setup / auth
 

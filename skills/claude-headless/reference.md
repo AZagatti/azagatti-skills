@@ -9,7 +9,7 @@ Like `codex exec`, `claude -p` is a **full agent**, not a completion — it read
 Two things that bite people:
 
 - **No `-C`/workspace flag — the working directory *is* the launch cwd.** Point it at a repo by launching there: `(cd <repo> && claude -p "…")`. Use `--add-dir <path>` to grant read/tool access to extra directories.
-- **Headless permissions are restrictive by default** (see below) — a tool that would prompt interactively is **denied** in `-p` mode, and the run still exits `is_error: false`. So a "write the file" task can *report success while writing nothing*. Always check `permission_denials`.
+- **Headless permissions inherit configuration** (see below) — a tool that would prompt interactively is **denied** in `-p` mode, and the run still exits `is_error: false`, but configured default modes and allow rules may pre-authorize more. Always choose a fail-closed mode for automation and check `permission_denials`.
 
 ## Permission model (the most-forgotten part)
 
@@ -17,16 +17,20 @@ In `-p` mode there's no human to approve tool calls, so:
 
 | Mode (flag) | Read/Grep/Glob | Edit/Write | Bash / mutating |
 |-------------|:---:|:---:|:---:|
-| **default** (no flag) | ✅ run | ❌ **denied** | ❌ prompt-class denied |
-| `--permission-mode acceptEdits` | ✅ | ✅ | still gated |
+| **configured baseline** (no flag) | usually run; can be changed by config | depends on default mode/rules | prompt-class calls deny unless pre-authorized |
+| `--permission-mode acceptEdits` | ✅ | ✅ | common in-scope filesystem commands auto-approved; other Bash gated |
 | `--permission-mode plan` | ✅ (plans only, no changes) | ❌ | ❌ |
 | `--permission-mode bypassPermissions` | ✅ | ✅ | ✅ (everything) |
 | `--dangerously-skip-permissions` | ✅ | ✅ | ✅ (everything) |
 | `--allowedTools "Edit Bash(git *)"` | ✅ | granular allow-list | granular |
 
-Verified: under default perms a **Read** task returns the file's content (no denial); a **Write** task returns `permission_denials: ["Write"]`, `is_error: false`, and **the file is not created** — even though `.result` says "Created …". With `--permission-mode acceptEdits` the same write succeeds.
+Observed on the audited configuration: with no permission flag, a **Read** task returned the file's content; a **Write** task returned `permission_denials: ["Write"]`, `is_error: false`, and did not create the file even though `.result` claimed success. With `--permission-mode acceptEdits` the same write succeeded. This is an account/config observation, not a universal default contract.
 
 **Rule:** pick the least privilege that lets the task complete, and when the task should change files, use `--output-format json` and assert `permission_denials` is empty (don't trust `.result` prose or the exit code alone).
+
+For a locked-down built-in read surface, prefer `--permission-mode dontAsk --tools "Read,Grep,Glob"`; add only narrowly scoped read-only Bash permissions when required. Inherited MCP servers, hooks, and managed policy still apply; add `--safe-mode` and explicit MCP configuration when stronger isolation is required. Omitting the flag inherits the user's configured baseline.
+
+`acceptEdits` also auto-approves common filesystem commands such as `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp`, and `sed` when they target the working directory or an added directory. Other Bash commands and protected/out-of-scope paths remain gated.
 
 - `--dangerously-skip-permissions` / `--allow-dangerously-skip-permissions` — full bypass (incl. network-capable Bash). Only in a trusted/sandboxed dir; confirm with the user first. `-p` also auto-skips the workspace-trust dialog, so only run it in directories you trust.
 - `--tools "Read,Grep,Glob"` restricts the *available* built-in tool set (use `""` to disable all, `"default"` for all); `--allowedTools`/`--disallowedTools` gate *permission* to use them.

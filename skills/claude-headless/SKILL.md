@@ -12,7 +12,7 @@ Run Claude Code in **non-interactive mode** (formerly called headless) with `cla
 `claude -p` is a **full agent**, not a text completion — it reads files, runs shell/`git`, uses MCP + skills, in whatever directory you launch it from, as its **own session** (own context, own cost, own `session_id`). Three things that bite:
 
 - **No `-C` flag — the working directory is the launch cwd.** Point it at a repo by launching there: `(cd <repo> && claude -p "…")`. `--add-dir <path>` grants extra access.
-- **Headless perms are restrictive by default.** A tool that would prompt interactively is **denied** in `-p` mode — *and the run still exits `is_error: false`*. A "write the file" task can report success while writing nothing. Choose a permission mode deliberately and verify (below).
+- **Headless permissions inherit configuration.** A tool that would prompt interactively is **denied** in `-p` mode — *and the run still exits `is_error: false`* — but preconfigured default modes and allow rules can grant more. Choose a fail-closed permission mode deliberately for automation and verify (below).
 - **It's a fresh session** — it does **not** see this conversation. Put everything it needs in the prompt (name files/paths; it reads them itself).
 
 ## Quick reference
@@ -52,13 +52,13 @@ Infer the least privilege that lets the task finish:
 
 | Task | Permission | Command |
 | ---- | ---------- | ------- |
-| read / analyze / summarize / review / "explain" / answer a question | **default** (reads and recognized read-only commands; prompt-class tools denied) | `(cd <dir> && claude -p [--model <m>] [--effort <e>] "<task>")` |
-| must edit files | `--permission-mode acceptEdits` | `(cd <dir> && claude -p --permission-mode acceptEdits [--model <m>] "<task>")` |
+| read / analyze / summarize / review / "explain" / answer a question | `dontAsk` + restricted built-in read tools; inherited policy/MCP/hooks still apply | `(cd <dir> && claude -p --permission-mode dontAsk --tools "Read,Grep,Glob" [--model <m>] [--effort <e>] "<task>")` |
+| must edit files | `--permission-mode acceptEdits` (also allows common in-scope filesystem commands) | `(cd <dir> && claude -p --permission-mode acceptEdits [--model <m>] "<task>")` |
 | must also run mutating shell/tests | `--allowedTools` (granular) or `--permission-mode bypassPermissions` | prefer `--allowedTools "Edit Bash(npm test)"` over a blanket bypass |
 | user explicitly wants full autonomy in a trusted/sandboxed dir | `--dangerously-skip-permissions` | confirm with the user first |
 | `perms=<mode>` given | that mode | explicit override wins |
 
-- Default to **read-only** (no permission flag) unless the task must change files. Most delegations (summarize, review, investigate) are read-only.
+- For a locked-down built-in read surface, use `--permission-mode dontAsk` and restrict `--tools` to the read tools required. Add narrowly scoped `--allowedTools` entries for read-only shell commands only when the task needs them. Inherited MCP servers, hooks, and managed policy still apply; use `--safe-mode` and explicit MCP configuration when stronger isolation is required. Omitting a permission flag uses the configured baseline; do not call that deterministic read-only.
 - Never use `--dangerously-skip-permissions` / `bypassPermissions` unless the user asks and the dir is trusted.
 - The `"<task>"` in the templates above is shorthand — actually pass the task via the **quoted heredoc** in §4 so embedded quotes/`$`/backticks don't break the command.
 

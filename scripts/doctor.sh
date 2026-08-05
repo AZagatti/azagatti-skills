@@ -24,10 +24,10 @@ check "codex-exec (OpenAI)"        codex "codex --version" \
   'codex exec -s read-only -C <repo> "<goal>"   # codex doctor also reports updates'
 check "claude-headless (Anthropic)" claude "claude --version" \
   "claude / then /login" \
-  'claude -p "<task>" --output-format json | jq -r .result'
+  'claude -p --permission-mode dontAsk --tools "Read,Grep,Glob" "<task>" --output-format json | jq -r .result'
 check "grok-headless (xAI)"         grok  "grok --version" \
   "grok login" \
-  'grok --cwd <repo> -p "<task>"   # update check: grok update --check'
+  'grok --cwd <repo> --permission-mode dontAsk --tools "Read,Grep" --allow "Read" --allow "Grep" -p "<task>"'
 check "agy-headless (Antigravity)"  agy   "agy --version" \
   "agy login" \
   'agy --add-dir <repo> --output-format json --print-timeout 3m -p "<task>"'

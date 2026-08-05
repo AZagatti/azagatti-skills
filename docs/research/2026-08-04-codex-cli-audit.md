@@ -321,3 +321,15 @@ Therefore the skill is right to avoid inventing model IDs and should prefer live
 - No write sandbox was exercised. Workspace-write conclusions come from official documentation/help, not mutation tests.
 - No real remote PR was fetched. The concern about `gh` is based on the official network-off sandbox contract and installed approval behavior; repository-specific MCP/connectors or custom permission profiles could provide other paths.
 - A background research agent was requested by the local research workflow, but the agent pool was full; all evidence was gathered locally.
+
+## Follow-up: Codex CLI 0.146.0 — 2026-08-05
+
+The standalone installation was updated with `codex update` from 0.145.0 to 0.146.0 and re-probed. This follow-up preserves the original 0.145 evidence above while recording the current installation state.
+
+- Direct help-output comparisons found no changes in `codex --help`, `codex exec --help`, or `codex exec review --help` between the installed 0.145 and 0.146 binaries.
+- `codex debug models` returned the same eight account-visible/hidden catalog entries, defaults, effort tiers, and API fields recorded above.
+- A safe read-only smoke test exited 0, printed only the requested README heading to stdout, and kept the agent header/progress/token accounting on stderr.
+- Spark still ran with effort unset and rejected explicit `model_reasoning_effort="none"`.
+- `--strict-config` is a visible `exec`/`review`/`resume` option that the earlier reference missed. A run with an unknown `-c` field exited 1 before model execution, so deterministic automation should enable it.
+- `--full-auto` and `--experimental-json` remain accepted hidden compatibility aliases but are absent from visible 0.146 help; the reference now documents them outside the ordinary flags table.
+- `codex update` is the supported standalone updater. After installation, `codex doctor --summary` reported 0.146.0 with locally consistent update state, while `codex doctor --json` confirmed the latest available version was also 0.146.0.

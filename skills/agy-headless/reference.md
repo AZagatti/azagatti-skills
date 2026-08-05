@@ -32,7 +32,7 @@ Headless has no human to approve tool calls, so:
 | `--dangerously-skip-permissions` | Auto-approve **all** tool permission requests (files + commands) — only in a trusted/sandboxed dir; confirm with the user first |
 | `--sandbox` | Run with terminal restrictions enabled |
 
-**Rule:** prefer a narrow allow-rule under `permissions.allow` in `settings.json`, such as `write_file(<target>)`, plus `--add-dir`. Reserve the dangerous bypass for explicit authorization. A bounded `--print-timeout` still protects against unrelated stalls.
+**Rule:** prefer an exact absolute-target rule under `permissions.allow` in `~/.gemini/antigravity-cli/settings.json`, such as `write_file(/absolute/path/to/target)`, plus `--add-dir`. That user-level rule is global and persists across runs: preserve the prior settings and remove the temporary rule immediately afterward. Reserve the dangerous bypass for explicit authorization. A bounded `--print-timeout` still protects against unrelated stalls.
 
 ## Key flags
 
@@ -74,7 +74,7 @@ There is no structured permission-denial field in the observed JSON. On 1.1.10, 
 |-----------------------------------|-----------------|--------|
 | `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro` | add `--effort`; or use an emitted suffixed selection | Google |
 | `claude-sonnet-4-6`, `claude-opus-4-6-thinking` | fixed emitted slug; omit a conflicting `--effort` | Anthropic |
-| `gpt-oss-120b-medium` | fixed emitted slug; omit a conflicting `--effort` | open-weight |
+| `gpt-oss-120b-medium` | fixed emitted slug; omit a conflicting `--effort` | OpenAI-origin open-weight |
 
 - **Selection:** for Gemini, prefer a base family slug such as `gemini-3.6-flash` with `--effort low`; or pass an emitted selection such as `gemini-3.6-flash-low` without a conflicting effort. For Claude/GPT-OSS entries with no base variant, use the exact emitted slug. Unknown values fail instead of silently falling back (fixed in 1.1.2).
 - **Effort:** use `--effort low|medium|high`. Version 1.1.10 fixed earlier cases where `--model`/`--effort` were silently ignored in print mode, so do not generalize results from older releases.

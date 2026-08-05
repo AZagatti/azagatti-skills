@@ -28,7 +28,7 @@ Rule: **`-p "<prompt>"` as a unit, all other flags on either side of it — neve
 **Quoting the prompt** (it's a shell argument, so `"`, `` ` ``, `$`, `'` inside it can break the command):
 
 - Prompt contains `"` / `` ` `` / `$` → **single-quote it**: `grok --cwd . -p 'add a "## Notes" section'` (verified — embedded `"` is inert inside `'...'`). If it also contains a literal `'`, escape that as `'\''`.
-- Long, multi-line, or every-kind-of-quote → **`--prompt-file <path>`**, which *replaces* `-p` (standalone, not combined): `printf '%s' "$PROMPT" > /tmp/p.txt && grok --cwd . --always-approve --prompt-file /tmp/p.txt` (verified). `--prompt-json <json>` takes content blocks the same way.
+- Long, multi-line, or every-kind-of-quote → put the prompt in a securely created temporary file, then use **`--prompt-file <path>`**, which *replaces* `-p` (standalone, not combined): `grok --cwd . --prompt-file <path>` (verified). Prompt delivery itself needs no broad approval; choose permissions separately for the requested tools. `--prompt-json <json>` takes content blocks the same way.
 
 ## Permission model (the most-forgotten part)
 
@@ -55,7 +55,7 @@ On the audited trusted project with no loaded permission rules and `yolo=false`,
 | `-m, --model <MODEL>` | Model id (default `grok-4.5`). See Models below |
 | `--reasoning-effort <E>` (alias `--effort`) | Current accepted values: `low` \| `medium` \| `high` |
 | `--permission-mode <M>` | `default` · `acceptEdits` · `auto` · `dontAsk` · `bypassPermissions` · `plan` |
-| `--always-approve` | Auto-approve **all** tool executions (simplest way to let writes land) |
+| `--always-approve` | Auto-approve **all** tool executions; reserve for explicit authorization in a trusted directory |
 | `--allow <RULE>` / `--deny <RULE>` | Permission allow/deny rule (Claude Code: `--allowedTools`/`--disallowedTools`) |
 | `--tools <LIST>` / `--disallowed-tools <LIST>` | Allow-list / remove built-in tools (comma-separated) |
 | `--disable-web-search` | Turn off web search + web fetch |

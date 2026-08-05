@@ -46,16 +46,16 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 
 ## 3. Build the command
 
-**Always:** `--add-dir <repo>` for any task about your files, `-p "<prompt>"` last, a permission flag if it must act, and a bounded `--print-timeout`.
+**Always:** `--add-dir <repo>` for any task about your files, `-p "<prompt>"` last, explicit permission authorization if it must act, and a bounded `--print-timeout`.
 
 | Task | Command |
 | ---- | ------- |
 | read / analyze / review / question | `agy --add-dir <repo> [--model <slug>] [--effort <e>] --output-format json --print-timeout 3m -p "<task>"` |
-| must edit files | pre-approve a narrow `write_file(<target>)` rule under `permissions.allow` in `settings.json`, then run with `--add-dir` |
+| must edit files | pre-approve an exact absolute `write_file(<target>)` rule under `permissions.allow` in `~/.gemini/antigravity-cli/settings.json`, then run with `--add-dir` and remove the rule afterward |
 | full autonomy (files + commands) in a trusted dir | add `--dangerously-skip-permissions` (confirm with user first) |
 
 - **Without `--add-dir` the agent can't see your repository files** and may answer from the scratch fallback instead. This is the #1 failure.
-- On `agy 1.1.10`, default mode and `--mode accept-edits` both soft-deny a headless `write_file` request. Use a scoped persistent allow-rule when possible. Keep `--print-timeout` bounded for unrelated stalls.
+- On `agy 1.1.10`, default mode and `--mode accept-edits` both soft-deny a headless `write_file` request. A user-level `permissions.allow` entry is global and persistent: use an exact absolute target, preserve the prior settings, and remove the temporary rule after the run. Keep `--print-timeout` bounded for unrelated stalls.
 - Never use `--dangerously-skip-permissions` unless the user asks and the dir is trusted.
 
 ## 4. Run & capture
@@ -66,12 +66,12 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 
 ## 5. After it runs
 
-- **Attribute** the result to Antigravity + the specific model (Gemini/Claude/GPT-OSS — a different vendor; review, don't rubber-stamp).
-- **Edits:** confirm with `git diff` / `ls` on the `--add-dir` path that the change actually landed (writes only apply with a permission flag; prose alone isn't proof).
+- **Attribute** the result to Antigravity and the specific underlying model vendor. For a second opinion, verify that vendor differs from the orchestrator; review, don't rubber-stamp.
+- **Edits:** confirm with `git diff` / `ls` on the `--add-dir` path that the change actually landed (writes require explicit permission authorization; prose alone isn't proof).
 - **Continue** the same thread with `-c`/`--continue` (most recent) or `--conversation <id>`.
 
 ## Failure notes
 
-- **Empty successful JSON plus a `write_file` denial on stderr** = the tool was soft-denied. Add a scoped `permissions.allow` rule in `settings.json`; do not rely on `--mode accept-edits` for headless writes on 1.1.10.
+- **Empty successful JSON plus a `write_file` denial on stderr** = the tool was soft-denied. If authorized, add a temporary exact-target `permissions.allow` rule in `~/.gemini/antigravity-cli/settings.json`, then remove it after the run; do not rely on `--mode accept-edits` for headless writes on 1.1.10.
 - **Task hangs then `timeout waiting for response`** = the repo may be missing from `--add-dir`, an MCP/tool may be stuck, or the model did not finish. Fix the cause before increasing the timeout.
 - Needs `agy` on PATH + a Google/Antigravity login. Everything else (full flags, model list, effort handling) is in [reference.md](reference.md).

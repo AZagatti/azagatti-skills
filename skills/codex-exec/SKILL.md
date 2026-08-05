@@ -64,6 +64,7 @@ Called with a free-form instruction, optionally prefixed by `key=value` options:
 
 - **Which review flag:** committed work on a branch vs a base → `--base <base>`; uncommitted/untracked local changes → `--uncommitted` (`--base` won't see untracked files). Unsure which the user means → check `git status` in pre-flight and pick, or run both.
 - `review` can inherit sandbox settings from user/config context. Set `-c 'sandbox_mode="read-only"'` explicitly for a review-only delegation and confirm the startup header before trusting the boundary.
+- For CI or other deterministic automation, add `--strict-config` so unknown config keys fail before model execution.
 - **A literal remote PR** needs separately authorized command networking and authenticated `gh`, or PR data fetched outside the sandbox and piped to Codex. Default `read-only` does not guarantee network access.
 - `-C` **must precede `review`**: `codex exec -C <repo> review …` (putting `-C` after `review` errors).
 - Add `--skip-git-repo-check` only if it may run outside a Git repo.

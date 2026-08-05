@@ -52,24 +52,25 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 
 | Task | Permission | Command |
 | ---- | ---------- | ------- |
-| pure Q&A / read-only review | project defaults, preferably `dontAsk` + scoped read rules | `grok --cwd <dir> [--permission-mode dontAsk] [-m <model>] [--effort <e>] -p "<task>"` |
+| pure Q&A / file-only review | `dontAsk` + explicit read surface | `grok --cwd <dir> --permission-mode dontAsk --tools 'Read,Grep' --allow 'Read' --allow 'Grep' [-m <model>] [--effort <e>] -p "<task>"` |
 | edit files, keep shell gated | `acceptEdits` plus scoped shell rules if needed | `grok --cwd <dir> --permission-mode acceptEdits -p "<task>"` |
 | deterministic granular automation | `--allow`/`--deny` / `--tools` | `grok --cwd <dir> --permission-mode dontAsk --allow '<rule>' -p "<task>"` |
 | `perms=<mode>` given | `--permission-mode <mode>` | explicit override |
 
-- Default behavior is not universal: on the trusted audited project with no loaded rules, a direct read and read-only `pwd` both ran. Enterprise policy, persisted rules, trust, and tool classification can change that.
+- Default behavior is not universal: on the trusted audited project with no loaded rules, a direct read and read-only `pwd` both ran. Enterprise policy, persisted rules, trust, and tool classification can change that. Treat project defaults as non-deterministic; use `dontAsk` plus a reviewed read-only `--tools`/`--allow` surface for automation, while remembering that inherited MCP/hooks/policy still apply.
+- The explicit `Read,Grep` recipe above was live-tested on 0.2.118. If a review needs Git, add `Bash` to `--tools` and allow only the exact read-only `git status`/`git diff` forms required.
 - Current xAI docs define `acceptEdits` as auto-approving file edits while shell commands remain gated. Prefer `dontAsk` plus narrow `--allow` rules when a script must fail closed.
 - Never use `--always-approve` / `bypassPermissions` unless the user asks and the dir is trusted (they auto-approve Bash too).
-- **Quoting:** the prompt is a shell arg. If it contains `"`/`` ` ``/`$`, **single-quote it** — `-p 'add a "## Notes" section'` (embedded `"` is inert in `'...'`; escape a literal `'` as `'\''`). For long/multi-line/messy prompts, use **`--prompt-file <path>`**, which *replaces* `-p` standalone: `printf '%s' "$PROMPT" > /tmp/p.txt && grok --cwd <dir> --always-approve --prompt-file /tmp/p.txt`.
+- **Quoting:** the prompt is a shell arg. If it contains `"`/`` ` ``/`$`, **single-quote it** — `-p 'add a "## Notes" section'` (embedded `"` is inert in `'...'`; escape a literal `'` as `'\''`). For long/multi-line/messy prompts, put it in a securely created temporary file and use **`--prompt-file <path>`**, which replaces `-p`; prompt delivery itself does not require `--always-approve`.
 
 ## 4. Run & capture
 
 - **Verify writes with JSON, not prose.** When the task edits files, add `--output-format json` and assert the current successful terminal value `stopReason == "end_turn"`:
   ```bash
-  grok --cwd <dir> --always-approve -p "<task>" --output-format json \
+  grok --cwd <dir> --permission-mode acceptEdits -p "<task>" --output-format json \
     | jq '{stopReason, ok:(.stopReason=="end_turn"), text}'
   ```
-  Then `git diff` to confirm the change actually landed.
+  Add only the exact scoped `--allow` rule needed for shell/tests. Then `git diff` to confirm the change actually landed.
 - Just the answer: `grok -p "<task>" --output-format json | jq -r .text` (or plain output for a single answer).
 - **Long runs:** `grok -p` is a full agentic loop — run it in the background or with a generous timeout so it isn't killed; cap turns with `--max-turns`.
 
