@@ -18,8 +18,8 @@ Cross-vendor SECOND OPINION on a diff/design (different vendor than you're runni
   • xAI take .................................... grok-headless      (grok -p)
   • Gemini / Claude / GPT-OSS via one login ..... agy-headless      (agy -p)
 
-Structured JSON to script against .............. claude-headless / grok-headless (single-result) or codex-exec --json (JSONL); agy = plain text
-Cheap / parallel bulk work ..................... claude-headless --model haiku (or a cheap model on any)
+Structured JSON to script against .............. claude-headless / grok-headless / agy-headless (single result) or codex-exec --json (JSONL)
+Cheap / parallel bulk work ..................... /claude-headless model=haiku or /agy-headless model=gemini-3.6-flash effort=low
 Actually EDIT files / run tests ................ codex-exec -s workspace-write (strongest repo tooling)
 Same task across many models ................... agy-headless (multi-vendor behind one login)
 ```
@@ -37,10 +37,10 @@ Once chosen, use that CLI's skill for the exact invocation, permission model, an
 
 | CLI | Skill | Headline gotcha to remember |
 |-----|-------|------------------------------|
-| OpenAI Codex | `codex-exec` | `-C` must precede `review`; reasoning off by default |
+| OpenAI Codex | `codex-exec` | `-C` must precede `review`; model/effort can come from config |
 | Claude Code | `claude-headless` | writes denied by default → check `permission_denials` |
-| xAI Grok | `grok-headless` | `-p` takes the prompt as its value; review needs `--always-approve` |
-| Antigravity | `agy-headless` | no cwd → `--add-dir`; hangs (not errors) on unapproved tools |
+| xAI Grok | `grok-headless` | `-p` takes the prompt as its value; permissions depend on trust/rules |
+| Antigravity | `agy-headless` | no cwd → `--add-dir`; denied tools can still return JSON `status:"SUCCESS"` |
 
 ## Quorum recipe (the killer app)
 

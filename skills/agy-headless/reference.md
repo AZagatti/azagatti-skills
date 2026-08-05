@@ -1,14 +1,14 @@
 # `agy -p` (Antigravity CLI, headless / print) — full reference
 
-`agy -p <PROMPT>` (aliases `--print` / `--prompt`) runs Google's **Antigravity CLI** non-interactively: it runs a single prompt as a full agent and prints the response, then exits. It's the headless entry point — the Antigravity analog of `claude -p` / `codex exec` / `grok -p`. Antigravity is the successor to Gemini CLI. Verified against `agy 1.1.2`.
+`agy -p <PROMPT>` (aliases `--print` / `--prompt`) runs Google's **Antigravity CLI** non-interactively: it runs a single prompt as a full agent and prints the response, then exits. It's the headless entry point — the Antigravity analog of `claude -p` / `codex exec` / `grok -p`. Verified against `agy 1.1.10` on 2026-08-04; re-check `agy --help`, `agy models`, and `agy changelog` because this CLI is moving quickly.
 
 ## Mental model
 
 `agy` is a **multi-vendor aggregator** (one Google/Antigravity login → Gemini **and** Claude **and** GPT-OSS models) and a **full agent**, not a completion. Three things that bite, all different from the other headless CLIs:
 
-- **No cwd/`-C`/`--cwd`. `agy` works in an isolated scratch workspace by default** (`~/.gemini/antigravity-cli/scratch/`) and **cannot see the directory you launched from.** To give it your repo you MUST pass **`--add-dir <path>`** (repeatable). Without it: a task that reads your files **hangs until `--print-timeout`** ("timeout waiting for response"), and any writes land in the scratch dir, not yours. Verified: with `--add-dir <dir>` it reads and writes your files; without it, it can't.
-- **Effort is baked into the model name, not a `--effort` flag.** You pick `Gemini 3.5 Flash (High)` vs `(Low)`; there is no `--reasoning-effort`.
-- **Plain-text output only.** There is no `--output-format`/JSON — stdout is the response text. And `agy` can **hang** on a tool it can't auto-approve (waits for approval that never comes in headless) until the timeout — so pair agentic tasks with a permission flag (below) and a sane `--print-timeout`.
+- **No print-mode cwd/`-C`/`--cwd`.** `agy -p` uses a scratch fallback (`~/.gemini/antigravity-cli/scratch/`) rather than exposing the launch directory as a workspace. To give it your repo you MUST pass **`--add-dir <path>`** (repeatable). A live read without it reported no active workspace; the same read with `--add-dir` succeeded.
+- **Models use stable slugs and effort is separate.** Prefer a base family slug plus `--effort`; `agy models` currently prints effort-suffixed selections, which also work when no conflicting effort is supplied.
+- **Structured output is available, but tool denial is not a JSON error.** `--output-format` accepts `text`, `json`, and `stream-json`. A denied tool can still end with `status:"SUCCESS"` and an empty response, so capture stderr and verify side effects.
 
 ## Giving it your files: `--add-dir` (the #1 gotcha)
 
@@ -26,13 +26,13 @@ Headless has no human to approve tool calls, so:
 
 | Flag | Effect |
 |------|--------|
-| **default** (no flag) | Tool calls that need approval **block/hang** until `--print-timeout`; the run then errors `timeout waiting for response`. Read-only reasoning is fine; agentic/file/command work stalls. |
-| `--mode accept-edits` | Auto-approve file edits (verified: writes apply under `--add-dir`) |
+| **default** (no flag) | Tools that would prompt are soft-denied in headless mode; a notice is printed to stderr. |
+| `--mode accept-edits` | Selects accept-edits mode, but on 1.1.10 a headless `write_file` probe was still soft-denied. |
 | `--mode plan` | Plan only — no changes |
 | `--dangerously-skip-permissions` | Auto-approve **all** tool permission requests (files + commands) — only in a trusted/sandboxed dir; confirm with the user first |
 | `--sandbox` | Run with terminal restrictions enabled |
 
-**Rule:** for anything beyond pure reasoning, pass `--mode accept-edits` (edits) or `--dangerously-skip-permissions` (full autonomy) **plus** `--add-dir` — otherwise the agent hangs on its first tool call and times out. Keep a bounded `--print-timeout` so a stuck run fails fast.
+**Rule:** prefer a narrow allow-rule under `permissions.allow` in `settings.json`, such as `write_file(<target>)`, plus `--add-dir`. Reserve the dangerous bypass for explicit authorization. A bounded `--print-timeout` still protects against unrelated stalls.
 
 ## Key flags
 
@@ -40,12 +40,16 @@ Headless has no human to approve tool calls, so:
 |------|---------|
 | `-p` / `--print` / `--prompt <P>` | Run a single prompt non-interactively and print the response |
 | `--add-dir <DIR>` | Add a directory to the workspace (**repeatable**) — how `agy` gets your files |
-| `--model <NAME>` | Model for the session — the **exact display name** from `agy models` (e.g. `"Claude Opus 4.6 (Thinking)"`, spaces/parens included) |
+| `--model <SLUG>` | Model for the session — preferably a base family slug with `--effort`, or an exact effort-suffixed value emitted by `agy models` |
+| `--effort <E>` | Reasoning effort for the selected model: `low` \| `medium` \| `high` |
 | `--mode <M>` | Execution mode: `accept-edits` \| `plan` |
 | `--dangerously-skip-permissions` | Auto-approve all tool permission requests |
 | `--sandbox` | Run in a sandbox with terminal restrictions |
 | `--agent <NAME>` | Agent for this session (`agy agents` lists them) |
 | `--print-timeout <DUR>` | Timeout for print-mode wait (**default `5m0s`**) — bump for long agentic runs, lower to fail fast on a hang |
+| `--output-format <F>` | `text` (default) \| `json` \| `stream-json` |
+| `--json-schema <JSON-or-path>` | Constrain structured final output; in `stream-json`, applies to the final result |
+| `--disable-slash-commands` | Disable slash-command and skill expansion in print mode |
 | `-c` / `--continue` | Continue the most recent conversation |
 | `--conversation <ID>` | Resume a previous conversation by ID |
 | `-i` / `--prompt-interactive <P>` | Run an initial prompt, then stay interactive (not headless) |
@@ -56,22 +60,24 @@ Subcommands: `agy models` (list models), `agy agents` (list agents), `agy plugin
 
 ## Output
 
-Plain text on stdout — the assistant's response. **No JSON/structured mode.** For scripting, capture stdout directly; there is no `stopReason`/`text` object like `grok -p`. To confirm a file change actually happened, `git diff` (or `ls`) the `--add-dir` path — don't trust the prose, and remember writes only land when a permission flag is set.
+- `text`: final response text.
+- `json`: one object with `conversation_id`, `status`, `response`, `duration_seconds`, `num_turns`, and `usage`.
+- `stream-json`: typed NDJSON progress plus a final result.
+
+There is no structured permission-denial field in the observed JSON. On 1.1.10, a blocked write printed a stderr `write_file` denial, then returned `{"status":"SUCCESS","response":""}`. Treat process output, stderr, and `git diff`/filesystem state together.
 
 ## Models and effort
 
-`agy models` is the source of truth. This install exposes a **multi-vendor** set, with **reasoning effort encoded in the model name** (no separate flag):
+`agy models` is the account-specific source of truth. Gemini families accept a base slug with effort supplied separately; vendor models that expose only a fixed emitted slug should use that exact slug without a conflicting effort:
 
-| Model (`--model` value, verbatim) | Vendor | Effort tier (in the name) |
-|-----------------------------------|--------|---------------------------|
-| `Gemini 3.5 Flash (Low)` / `(Medium)` / `(High)` | Google | Low / Medium / High |
-| `Gemini 3.1 Pro (Low)` / `(High)` | Google | Low / High |
-| `Claude Sonnet 4.6 (Thinking)` | Anthropic | thinking on |
-| `Claude Opus 4.6 (Thinking)` | Anthropic | thinking on |
-| `GPT-OSS 120B (Medium)` | open-weight | Medium |
+| Model slug (`--model` value) | Effort handling | Vendor |
+|-----------------------------------|-----------------|--------|
+| `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro` | add `--effort`; or use an emitted suffixed selection | Google |
+| `claude-sonnet-4-6`, `claude-opus-4-6-thinking` | fixed emitted slug; omit a conflicting `--effort` | Anthropic |
+| `gpt-oss-120b-medium` | fixed emitted slug; omit a conflicting `--effort` | open-weight |
 
-- **Selection:** `--model` takes the exact display string, e.g. `agy --model "Gemini 3.5 Flash (High)" -p "…"`. An unknown value errors and prints the valid list.
-- **No `--effort` / `--reasoning-effort`** — to change effort, pick a different `(Low|Medium|High)` model variant. Effort is a ceiling scaled by task (see the other headless skills), so lower tiers only differ on hard tasks.
+- **Selection:** for Gemini, prefer a base family slug such as `gemini-3.6-flash` with `--effort low`; or pass an emitted selection such as `gemini-3.6-flash-low` without a conflicting effort. For Claude/GPT-OSS entries with no base variant, use the exact emitted slug. Unknown values fail instead of silently falling back (fixed in 1.1.2).
+- **Effort:** use `--effort low|medium|high`. Version 1.1.10 fixed earlier cases where `--model`/`--effort` were silently ignored in print mode, so do not generalize results from older releases.
 - The lineup drifts (Antigravity is new and Google-managed) — re-run `agy models` rather than trusting this table.
 
 ## Vision (image input)

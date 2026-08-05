@@ -1,6 +1,6 @@
 # `claude -p` (headless / print mode) — full reference
 
-`claude -p` (`--print`) runs Claude Code **non-interactively**: it takes a prompt, runs a full agentic session (tools, MCP, skills), prints the result, and exits. It's the CLI/SDK/scripting entry point. Verified against `claude 2.1.208`; re-check `claude --help` for your version.
+`claude -p` (`--print`) runs Claude Code in **non-interactive mode** (formerly headless): it takes a prompt, runs a full agentic session, prints the result, and exits. Verified against `claude 2.1.220` on 2026-08-04; re-check `claude --help` and the [official CLI reference](https://code.claude.com/docs/en/cli-usage).
 
 ## Mental model
 
@@ -38,7 +38,7 @@ Verified: under default perms a **Read** task returns the file's content (no den
 | `-p, --print` | Non-interactive: print result and exit |
 | `--output-format` | `text` (default, clean answer) · `json` (single result object) · `stream-json` (realtime events) — only with `-p` |
 | `--input-format` | `text` (default) · `stream-json` (realtime streaming input) |
-| `--model` | Alias (`opus`, `sonnet`, `haiku`, `fable`) or full id (`claude-sonnet-5`, …). Default: inherits the parent/config model |
+| `--model` | Alias (`default`, `best`, `fable`, `opus`, `sonnet`, `haiku`, `opusplan`) or full id. Omission follows Claude Code account/config/organization precedence. |
 | `--effort` | Reasoning effort: `low` · `medium` · `high` · `xhigh` · `max` |
 | `--permission-mode` | `acceptEdits` · `auto` · `bypassPermissions` · `manual` · `dontAsk` · `plan` |
 | `--allowedTools`, `--disallowedTools` | Comma/space list, e.g. `"Bash(git *) Edit"` |
@@ -73,35 +73,36 @@ Verified: under default perms a **Read** task returns the file's content (no den
   - `total_cost_usd`, `usage`, `modelUsage` — cost/token accounting
   - `session_id` — pass to `--resume` to continue
   - `num_turns`, `duration_ms`, `stop_reason`, `subtype`
+  - `structured_output` — parsed object produced by `--json-schema`; `result` remains a serialized string
 - **`stream-json`**: newline-delimited events as they happen (add `--include-partial-messages` for token-level, `--include-hook-events` for hooks).
 
 Capture just the answer: `claude -p "…" --output-format json | jq -r .result`.
 
 ## Models and effort
 
-**Aliases** → latest of each family: `opus` (`claude-opus-4-8`), `sonnet` (`claude-sonnet-5`), `haiku` (`claude-haiku-4-5`), `fable` (`claude-fable-5`). Pass a full id for a pinned/older version (e.g. `claude-opus-4-7`); `[1m]` suffix = 1M-context beta. With no `--model`, `-p` inherits the parent/config model (here `claude-opus-4-8[1m]`).
+Aliases resolve dynamically by provider, account, organization policy, and CLI version. On the audited first-party Max account, omission and `opus` resolved to Opus 5, `sonnet` to Sonnet 5, `haiku` to Haiku 4.5, and `fable` to Fable 5. Use a full id when reproducibility matters; still expect organization allowlists to apply.
 
-**`--effort` accepts `low | medium | high | xhigh | max`, but support is per-model — and not every model accepts every level.** Crucially, the **Claude Code CLI does not error on an unsupported model+effort combo** — it silently ignores the flag and runs anyway (verified: `--model haiku --effort high` → `is_error:false`, runs at Haiku's fixed behavior). So passing an effort a model doesn't support is harmless but does nothing. (This differs from the raw Anthropic API, which returns a 400 for the same combo.)
+**`--effort` accepts `low | medium | high | xhigh | max`, but support is per-model.** For an effort-capable model, Claude Code falls back to the highest supported level at or below the request; organization policy may clamp it further. The live CLI accepted `--model haiku --effort high`, but its JSON does not expose an applied effort, so that only proves argument acceptance—not that effort affected Haiku.
 
-| Model (alias / id) | `--effort` levels that take effect | Reasoning off? |
-|--------------------|-----------------------------------|:---:|
-| `fable` → `claude-fable-5` | low, medium, high, xhigh, max | ❌ **thinking always on** (can't disable) |
-| `opus` → `claude-opus-4-8` | low, medium, high, xhigh, max | ✅ (off unless thinking enabled) |
-| `claude-opus-4-7` | low, medium, high, xhigh, max | ✅ |
-| `claude-opus-4-6` | low, medium, high, max (**no `xhigh`**) | ✅ |
-| `claude-opus-4-5` | low, medium, high (**no `xhigh`/`max`**) | ✅ |
-| `sonnet` → `claude-sonnet-5` | low, medium, high, xhigh, max | ✅ |
-| `claude-sonnet-4-6` | low, medium, high, max (**no `xhigh`**) | ✅ |
-| `claude-sonnet-4-5` | **none — no effort support** | ✅ (thinking via budget, not effort) |
-| `haiku` → `claude-haiku-4-5` | **none — no effort support** | ✅ |
+| Model family | Documented `--effort` levels |
+|--------------|------------------------------|
+| Fable 5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | low, medium, high, xhigh, max |
+| Opus 4.6, Sonnet 4.6 | low, medium, high, max |
+| Models not listed, including Haiku 4.5 | no documented effort support |
 
-`xhigh` arrived with Opus 4.7; `max` requires Opus 4.6+/Sonnet 4.6+/Sonnet 5/Fable 5. Source: the `claude-api` skill's model catalog (authoritative, API-level) — re-check it when new models ship. Use `low` for cheap mechanical/bulk work, `xhigh`/`max` for the hardest reasoning.
+Claude Code also documents `ultracode` as a separate orchestration setting, not a raw model effort tier. Use the [official model configuration](https://code.claude.com/docs/en/model-config) as the live source.
 
 **Delegation tip:** to offload cheap/parallel work, run `--model haiku` (no effort — it's already fast) or `--model sonnet --effort low` in a `claude -p` subprocess while your main (Opus) session orchestrates.
 
-## Cost note
+## Cost and isolation notes
 
-A fresh `claude -p` run loads project context (`CLAUDE.md`, etc.), so even a trivial prompt costs cache-creation tokens (~$0.05–0.09 observed here). For cheap, isolated, context-free runs use `--bare` (skips CLAUDE.md/hooks/auto-memory). Cap spend with `--max-budget-usd`.
+A fresh `claude -p` run loads project customizations and can create substantial cache input. Inspect `total_cost_usd` and every `modelUsage` entry; cap spend with `--max-budget-usd`.
+
+- `--bare`: skips hooks, LSP, plugin sync, auto-memory, keychain reads, and CLAUDE.md auto-discovery. Built-in tools and explicit skills still exist. First-party auth must come from `ANTHROPIC_API_KEY` or `apiKeyHelper`; subscription OAuth is not read.
+- `--safe-mode`: disables customizations but keeps normal auth, built-in tools, model selection, and permissions.
+- `--bg`: creates a supervised session managed with `claude agents`, `attach`, `logs`, and `stop`. Keep a foreground `-p` subprocess attached when a script expects one terminal JSON result.
+- `-p --worktree`: creates a real Git worktree that is not automatically cleaned up after the non-interactive run; it is file isolation, not a security sandbox.
+- `--resume <session_id>`: requires session persistence and the same project/repository scope. `-p` sessions are resumable by ID but hidden from the interactive picker; re-pass per-run flags such as `--add-dir` and `--mcp-config`.
 
 ## Setup / auth
 

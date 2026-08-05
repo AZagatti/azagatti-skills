@@ -5,7 +5,7 @@ description: "Drive Claude Code non-interactively with `claude -p` (headless/pri
 
 # claude-headless — driving `claude -p`
 
-Run Claude Code non-interactively with `claude -p` to spawn a **separate** Claude session: delegate a self-contained task, run a cheaper/faster model in parallel, get isolated fresh-context output, or emit structured JSON for a script. You stay the driver; read its output and act on it. This skill exists because the headless flags (especially **permissions** and **output format**) are easy to forget and get silently wrong.
+Run Claude Code in **non-interactive mode** (formerly called headless) with `claude -p` to spawn a separate session: delegate a self-contained task, run a cheaper/faster model in parallel, get isolated fresh-context output, or emit structured JSON for a script.
 
 ## Mental model (read this first)
 
@@ -36,7 +36,7 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 ```
 
 - **Options are only the *contiguous leading* tokens whose key is `model`, `effort`, `dir`, or `perms`.** Stop at the first token that isn't one of those `key=value` forms — the rest is the **task**, verbatim (so an `=` inside the task is preserved).
-- `model=<alias|id>` → `--model` (aliases: `opus`/`sonnet`/`haiku`/`fable`, or a full id). No `model=` → omit it (inherits parent/config model). Never invent an id.
+- `model=<alias|id>` → `--model`. Current aliases include `default`, `best`, `fable`, `opus`, `sonnet`, `haiku`, and `opusplan`, or use a full id. No `model=` → omit it and let Claude Code resolve its account/config/organization default; it does not inherit the orchestrator's model.
 - `effort=<low|medium|high|xhigh|max>` → `--effort`.
 - `dir=<path>` → launch in that dir (`cd`) and/or `--add-dir`. Default: current working directory.
 - `perms=<mode>` → `--permission-mode <mode>` (explicit override of the role inference below).
@@ -52,7 +52,7 @@ Infer the least privilege that lets the task finish:
 
 | Task | Permission | Command |
 | ---- | ---------- | ------- |
-| read / analyze / summarize / review / "explain" / answer a question | **default** (read tools only) | `(cd <dir> && claude -p [--model <m>] [--effort <e>] "<task>")` |
+| read / analyze / summarize / review / "explain" / answer a question | **default** (reads and recognized read-only commands; prompt-class tools denied) | `(cd <dir> && claude -p [--model <m>] [--effort <e>] "<task>")` |
 | must edit files | `--permission-mode acceptEdits` | `(cd <dir> && claude -p --permission-mode acceptEdits [--model <m>] "<task>")` |
 | must also run mutating shell/tests | `--allowedTools` (granular) or `--permission-mode bypassPermissions` | prefer `--allowedTools "Edit Bash(npm test)"` over a blanket bypass |
 | user explicitly wants full autonomy in a trusted/sandboxed dir | `--dangerously-skip-permissions` | confirm with the user first |
@@ -73,15 +73,15 @@ Infer the least privilege that lets the task finish:
   ```
   (Single-quoting the arg with `'\''`-escaping works too, but the heredoc avoids all escaping.)
 - **Verify changes with JSON, not prose.** When the task edits files, use `--output-format json` and assert `permission_denials` is empty — a denied tool leaves `is_error:false` while doing nothing (the `jq` above surfaces both).
-- Just the answer: `claude -p "<task>" --output-format json | jq -r .result` (or plain `text` output for a single answer).
-- **Long runs:** `claude -p` is a full agentic loop — run it in the background or with a generous timeout so it isn't killed by a default tool timeout. Cap spend with `--max-budget-usd`.
-- **Cheap/isolated:** add `--bare` to skip CLAUDE.md/hooks/auto-memory for a clean, cheaper context-free run (then pass context explicitly via `--add-dir`/`--system-prompt`).
+- Just the answer: `claude -p "<task>" --output-format json | jq -r .result`. With `--json-schema`, consume `.structured_output`; `.result` remains a serialized string.
+- **Long runs:** keep the subprocess attached with a bounded timeout when you need its JSON result. `--bg` creates a supervised Claude session managed by `claude agents`; it is not the same as shell backgrounding.
+- **Cheap/isolated:** `--bare` skips auto-discovered customizations but requires API-key/provider auth; `--safe-mode` disables customizations while retaining normal auth. Use `--no-session-persistence` for disposable one-shots.
 
 ## 5. After it runs
 
 - **Attribute** the result to the spawned Claude session; if it used a different/cheaper model, treat its output as advisory and review it.
 - **Edits:** confirm `permission_denials` was empty **and** `git diff` shows the expected change — don't trust `.result` text. If files were denied, re-run with the right `--permission-mode`.
-- **Continue** the same session with `--resume <session_id>` (from the JSON) or `--continue` (most recent in cwd).
+- **Continue** with `--resume <session_id>` (from JSON) or `--continue` (most recent in cwd). Resume requires persistence and the same project/repository scope; `-p` sessions do not appear in the interactive picker.
 
 ## Failure notes
 

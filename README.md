@@ -18,12 +18,12 @@ Drive other coding CLIs **headlessly** — so one agent can delegate a self-cont
 | Skill | CLI | Headless entry | Tested | Headline gotcha |
 |-------|-----|----------------|--------|-----------------|
 | [**headless-delegate**](skills/headless-delegate/SKILL.md) | — (router) | picks one of the below | — | cross-vendor is the value; delegating a model to itself just adds cost |
-| [**codex-exec**](skills/codex-exec/SKILL.md) | OpenAI Codex | `codex exec` | `codex 0.144.3` | `-C` must precede `review`; reasoning off by default |
-| [**claude-headless**](skills/claude-headless/SKILL.md) | Claude Code | `claude -p` | `claude 2.1.208` | writes denied by default → check `permission_denials` |
-| [**grok-headless**](skills/grok-headless/SKILL.md) | xAI Grok Build | `grok -p` | `grok 0.2.93` | `-p` takes the prompt as its value; review needs `--always-approve` |
-| [**agy-headless**](skills/agy-headless/SKILL.md) | Google Antigravity | `agy -p` | `agy 1.1.2` | no cwd → `--add-dir`; hangs (not errors) on unapproved tools |
+| [**codex-exec**](skills/codex-exec/SKILL.md) | OpenAI Codex | `codex exec` | `codex 0.145.0` | `-C` must precede `review`; model/effort can come from config |
+| [**claude-headless**](skills/claude-headless/SKILL.md) | Claude Code | `claude -p` | `claude 2.1.220` | writes denied by default → check `permission_denials` |
+| [**grok-headless**](skills/grok-headless/SKILL.md) | xAI Grok Build | `grok -p` | `grok 0.2.118` | `-p` takes the prompt as its value; review needs tool approval |
+| [**agy-headless**](skills/agy-headless/SKILL.md) | Google Antigravity | `agy -p` | `agy 1.1.10` | no cwd → `--add-dir`; denied tools may still report success |
 
-*(Last verified 2026-07. CLI behavior drifts — each skill points you at runtime `<cli> models` as the source of truth.)*
+*(Last verified 2026-08. CLI behavior drifts — each skill points you at runtime help/model commands as the source of truth. Evidence: [Codex](docs/research/2026-08-04-codex-cli-audit.md), [Claude](docs/research/2026-08-04-claude-cli-audit.md), [Grok + Antigravity](docs/research/2026-08-04-grok-agy-cli-audit.md).)*
 
 **→ [Cross-CLI comparison & chooser](docs/cli-comparison.md)** · **[Safety & blast radius](docs/safety.md)**
 
@@ -75,7 +75,7 @@ Update: `./update.sh`. Uninstall: `./uninstall.sh`.
 
 ## Why these exist
 
-They aren't wrappers — they don't run the CLIs for you. They're **knowledge**: each was built by running the target CLI dozens of times and recording what really happens (e.g. "a Grok review that runs `git diff` returns `Cancelled` and no-ops under default perms — pass `--always-approve`"; "Antigravity ignores your cwd and writes to a scratch dir unless you `--add-dir`"). A fresh agent gets it right the first time instead of rediscovering the gotchas.
+They aren't wrappers — they don't run the CLIs for you. They're **knowledge**: each was built by running the target CLI and recording what really happens (e.g. "Antigravity can soft-deny a write while JSON still says `status:\"SUCCESS\"`"; "Codex sends progress to stderr and only its final answer to stdout"). A fresh agent gets it right the first time instead of rediscovering the gotchas.
 
 ## Versioning & releases
 
@@ -93,7 +93,7 @@ azagatti-skills/
 ├── .github/{workflows/{ci,release-please}.yml, ISSUE_TEMPLATE/, dependabot.yml, CODEOWNERS, ...}
 ├── scripts/{validate-skills.py, doctor.sh, new-skill.sh, release.sh}
 ├── template/{SKILL.md.tmpl, reference.md.tmpl}      # scaffold for new skills (.tmpl so scanners skip it)
-├── docs/{cli-comparison.md, safety.md}
+├── docs/{cli-comparison.md, safety.md, research/*.md}
 ├── install.sh / update.sh / uninstall.sh
 ├── CHANGELOG.md · CONTRIBUTING.md · SECURITY.md · CODE_OF_CONDUCT.md
 └── skills/

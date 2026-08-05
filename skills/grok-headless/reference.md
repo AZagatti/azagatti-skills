@@ -1,6 +1,6 @@
 # `grok -p` (Grok Build CLI, headless / single-turn) — full reference
 
-`grok -p <PROMPT>` (long form `--single <PROMPT>`) runs xAI's **Grok Build CLI** non-interactively: it takes a prompt, runs a full agentic turn (tools, MCP, subagents), prints the response to stdout, and exits. It's the headless/scripting entry point — the Grok analog of `claude -p` and `codex exec`. Verified against `grok 0.2.93`; re-check `grok --help` for your version.
+`grok -p <PROMPT>` (long form `--single <PROMPT>`) runs xAI's **Grok Build CLI** non-interactively: it takes a prompt, runs a full agentic turn (tools, MCP, subagents), prints the response to stdout, and exits. It's the headless/scripting entry point — the Grok analog of `claude -p` and `codex exec`. Verified against `grok 0.2.118` on 2026-08-04; re-check `grok --help`, `grok models`, and `grok update --check --json`.
 
 ## Mental model
 
@@ -9,7 +9,7 @@ Like `claude -p` and `codex exec`, `grok -p` is a **full agent**, not a completi
 Three things that bite:
 
 - **`-p`/`--single` takes the prompt as its *value*.** The prompt must immediately follow `-p`; put every other flag **before `-p`** or after the prompt string. `grok -p --effort low "hi"` fails with `a value is required for '--single'` (see Quoting/ordering below). This is the #1 gotcha and differs from `claude -p` (a boolean).
-- **Headless denies file writes by default.** A write/edit tool comes back `stopReason: "Cancelled"` and nothing happens — even though `text` says "Creating X". Grant write access explicitly (see Permissions).
+- **Headless cannot present an interactive approval.** Project trust, persisted settings, enterprise policy, and permission rules determine what runs. Use explicit fail-closed rules for automation and verify tool results.
 - **Working directory:** use `--cwd <dir>` to point Grok at a repo (unlike `claude -p`, which uses launch cwd). It's a fresh session — name the files/paths in the prompt; Grok reads them itself.
 
 ## Argument ordering (the #1 gotcha)
@@ -32,20 +32,18 @@ Rule: **`-p "<prompt>"` as a unit, all other flags on either side of it — neve
 
 ## Permission model (the most-forgotten part)
 
-Headless has no human to approve tool calls, so file-mutating tools are blocked unless you grant access. Verified behavior on `0.2.93`:
+Headless has no human to approve tool calls. Current xAI permission modes are Ask/default, Auto/`acceptEdits`, and Always approve; use rules to make non-interactive behavior deterministic:
 
 | Flag | Read/Grep/Glob | Write/Edit | Bash / mutating |
 |------|:---:|:---:|:---:|
-| **default** (no flag) | ✅ runs | ❌ **`Cancelled`** | ❌ blocked |
+| **default** (no flag) | depends on trust/settings/rules | prompts become denial in headless | prompts become denial in headless |
 | `--always-approve` | ✅ | ✅ | ✅ (auto-approves **all** tool calls) |
 | `--permission-mode bypassPermissions` | ✅ | ✅ | ✅ |
-| `--permission-mode acceptEdits` | ✅ | ❌ **still `Cancelled`** | ❌ | 
+| `--permission-mode acceptEdits` | ✅ | ✅ auto-approved | shell remains gated |
 | `--permission-mode plan` | ✅ (plans only) | ❌ | ❌ |
 | `--allow <RULE>` / `--deny <RULE>` | granular | granular | granular (Claude Code: `--allowedTools`/`--disallowedTools`) |
 
-Verified: under default perms a **read** task returns the file contents; a **write** task returns `stopReason: "Cancelled"` with the file **not created**; `--always-approve` and `bypassPermissions` both let the write land; **`acceptEdits` does *not* approve writes in headless** (both create and edit stayed `Cancelled`) — unlike `claude -p`, so don't rely on it.
-
-**Rule:** default perms allow file **reads** but **deny command execution** (`git`, shell, subagents) — a denied tool returns `Cancelled` and Grok exits right after its preamble (silent no-op). So default is only safe for tasks Grok finishes with plain reads (or where you paste the diff/content into the prompt). **Anything that runs `git diff`/shell — including a "review the changes" task — needs `--always-approve`** (or `bypassPermissions`, or a scoped `--allow`). Verified: `grok -p "review… run git diff…"` under default → `Cancelled`; with `--always-approve` → `EndTurn` + a real review. Then verify with JSON (below). `--always-approve`/`bypassPermissions` auto-approve everything including Bash — only in a trusted/sandboxed dir; confirm with the user first. Scope tools with `--tools <list>` (allow-list of built-ins), `--disallowed-tools <list>`, or `--disable-web-search`. `--sandbox <PROFILE>` (env `GROK_SANDBOX`) applies a filesystem/network sandbox profile.
+On the audited trusted project with no loaded permission rules and `yolo=false`, direct file reads and a read-only `pwd` command ran under default mode. That disproves a universal "default denies all shell" rule but does not establish what mutating commands do elsewhere. For scripts, prefer `--permission-mode dontAsk` plus narrow `--allow`/`--deny` rules. Reserve `--always-approve`/`bypassPermissions` for explicit authorization in a trusted directory.
 
 ## Key flags
 
@@ -53,9 +51,9 @@ Verified: under default perms a **read** task returns the file contents; a **wri
 |------|---------|
 | `-p, --single <PROMPT>` | Single-turn: print response and exit. **Prompt is the flag's value** (see ordering) |
 | `--prompt-file <PATH>` / `--prompt-json <JSON>` | Single-turn prompt from a file / as JSON content blocks (avoids shell quoting) |
-| `--output-format` | `plain` (default) · `json` (single object) · `streaming-json` |
+| `--output-format` | `plain` · `json` · `streaming-json` · `streaming-messages-json` |
 | `-m, --model <MODEL>` | Model id (default `grok-4.5`). See Models below |
-| `--reasoning-effort <E>` (alias `--effort`) | Reasoning effort for reasoning models — `low`/`medium`/`high` (verified on grok-4.5). Tolerant: accepted (and ignored) on non-reasoning models |
+| `--reasoning-effort <E>` (alias `--effort`) | Current accepted values: `low` \| `medium` \| `high` |
 | `--permission-mode <M>` | `default` · `acceptEdits` · `auto` · `dontAsk` · `bypassPermissions` · `plan` |
 | `--always-approve` | Auto-approve **all** tool executions (simplest way to let writes land) |
 | `--allow <RULE>` / `--deny <RULE>` | Permission allow/deny rule (Claude Code: `--allowedTools`/`--disallowedTools`) |
@@ -65,11 +63,9 @@ Verified: under default perms a **read** task returns the file contents; a **wri
 | `--cwd <DIR>` | Working directory Grok operates in |
 | `--json-schema <SCHEMA>` | Constrain output to a JSON Schema (implies `--output-format json`) |
 | `--max-turns <N>` | Cap agent turns |
-| `--best-of-n <N>` | **Headless only** — run the task N ways in parallel, pick the best |
-| `--check` | **Headless only** — append a self-verification loop to the prompt |
 | `--rules <RULES>` / `--system-prompt-override <P>` | Append rules to / replace the system prompt |
 | `--agent <NAME>` / `--agents <JSON>` / `--no-subagents` | Select/define custom agents; disable subagents |
-| `-c, --continue` / `-r, --resume [ID]` / `-s, --session-id <UUID>` / `--fork-session` | Continue most recent / resume by id / fix id / branch on resume |
+| `-c, --continue` / `-r, --resume [ID-or-title]` / `-s, --session-id <UUID>` / `--fork-session` | Continue/resume existing sessions; `--session-id` names a **new** session and only combines with resume when forking |
 | `--experimental-memory` / `--no-memory` | Enable / disable cross-session memory |
 | `-w, --worktree [NAME]` / `--worktree-ref <REF>` | Run in a fresh git worktree |
 | `--verbatim` | Send the prompt exactly as given (no augmentation) |
@@ -80,25 +76,22 @@ Subcommands: `grok models` (list account models), `grok agent {stdio,headless,se
 ## Output shape
 
 - **`plain`** (default): the response text on stdout — clean, best for piping one answer.
-- **`json`**: one object. Fields: `text` (the answer), `thought` (reasoning), `stopReason` (`EndTurn` = done; **`Cancelled` = a tool was denied** — the tell-tale for a blocked write), `sessionId` (pass to `--resume`), `requestId`.
+- **`json`**: one object. Fields include `text`, `thought`, `stopReason` (successful value observed on 0.2.118: `end_turn`), `sessionId`, `requestId`, usage, turns, and cost.
 - **`streaming-json`**: newline-delimited events.
 
-Capture just the answer: `grok -p "…" --output-format json | jq -r .text`. When a task should change files, assert `stopReason == "EndTurn"` (not `Cancelled`) and `git diff` — don't trust the `text` prose.
+Capture just the answer: `grok -p "…" --output-format json | jq -r .text`. When a task should change files, assert `stopReason == "end_turn"` and inspect `git diff` — don't trust the `text` prose.
 
 ## Models and effort
 
-**`grok models` is the ONLY authoritative list — the CLI rejects anything else.** The Grok Build CLI exposes a **curated set for your account/plan**, *not* the full xAI API catalog. Passing an unlisted model hard-errors: `grok -m grok-4.3` → `Couldn't set model 'grok-4.3': Invalid params: "unknown model id". Run 'grok models' to see available models.` (verified). So always run `grok models` and pick from it; don't pass an id you saw in xAI's web docs.
+**`grok models` is the authoritative list of built-in models for the current account.** Configured custom-model keys are also selectable. The Grok Build CLI surface is not the full xAI API catalog: passing an unavailable built-in id hard-errors, so do not copy raw API model names blindly.
 
-This install (logged in with grok.com) exposes exactly **two** — with **different** effort support (all verified by running each level):
+This install (logged in with grok.com) currently exposes one built-in model:
 
 | Model (from `grok models`) | Role | `--effort` levels that work | Reasoning off (`none`)? |
 |----------------------------|------|-----------------------------|:---:|
-| **`grok-4.5`** (default) | flagship coding/agentic | API accepts `minimal`, `low`, `medium`, `high`, `xhigh`, `max` (default `high`) — but xAI docs list only `low`/`medium`/`high`, so `minimal`/`xhigh`/`max` may clamp to the nearest documented tier | ❌ **`none` rejected** — always reasons; floor is `minimal` |
-| `grok-composer-2.5-fast` | fast composer/coding model | `none`, `minimal`, `low`, `medium`, `high` (and higher) | ✅ **`none` accepted** |
+| **`grok-4.5`** (default) | flagship coding/agentic | `low`, `medium`, `high` (default `high`) | ❌ always reasons |
 
-**`--reasoning-effort` (alias `--effort`)** — the CLI *parser* accepts `none | minimal | low | medium | high | xhigh | max` (plus model-menu ids); an out-of-set value fails locally (`unknown effort level 'X'. Use none, minimal, …`). But **whether a level works is per-model, decided server-side** — e.g. `grok-4.5 --effort none` → API error `This model does not support reasoning_effort value 'none'`. So `grok-4.5` cannot run with reasoning off (minimum `minimal`, which still emits a short thought); `grok-composer-2.5-fast` *can* (`none`). Use `minimal`/`low` for cheap/bulk work, `high`/`max` for hard reasoning.
-
-The levels are **distinct budgets, not aliases** — but effort is a *ceiling/bias*, not a fixed amount: the model reasons only as much as the task needs, up to that ceiling. So on easy/moderate tasks `minimal`≈`low`≈`high` in observed output (verified: grok-4.5 solved an inclusion-exclusion problem correctly at every level with the same visible reasoning); the gap only appears on tasks hard enough that a lower tier under-thinks. (The headless JSON `thought` field is a short preview, not the full trace — don't use its length to gauge reasoning depth.)
+**`--reasoning-effort` (alias `--effort`)** accepts `low | medium | high` in 0.2.118; other values fail locally. Use low for latency-sensitive work and high for harder reasoning. The JSON `thought` field is not a full reasoning trace and should not be used to estimate the effort applied.
 
 > The wider xAI **API** (raw `api.x.ai` with an API key — `grok-4.3`, `grok-4.20-*`, `grok-3-mini`, etc., per [xAI docs](https://docs.x.ai/docs/models)) is a **separate surface** and is **not** selectable through `grok -m` on a grok.com login. A different account/plan may expose a different set — trust that account's `grok models` output, not this table.
 
@@ -111,4 +104,4 @@ Image support is **per-model, not a CLI feature.** There is no `--image` flag �
 - `grok` on PATH (`grok --version`); `grok login` / `grok logout` manage auth (here: logged in with grok.com). `grok inspect` shows the config Grok discovers for a directory.
 - Long runs: `grok -p` is a full agentic loop — run it in the background or with a generous timeout so it isn't killed by a default tool timeout; cap turns with `--max-turns`.
 
-Sources: [xAI Grok models](https://docs.x.ai/docs/models), [Grok versions/API strings](https://mungomash.com/ai/grok/versions/).
+Sources: [Grok Build overview](https://docs.x.ai/build/overview), [Headless & Scripting](https://docs.x.ai/build/cli/headless-scripting), [Permissions](https://docs.x.ai/build/features/permissions), and [Grok 4.5](https://docs.x.ai/developers/grok-4-5).
