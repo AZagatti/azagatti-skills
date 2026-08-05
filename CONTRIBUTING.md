@@ -4,7 +4,7 @@ Thanks for wanting to improve these skills. The bar here is **empirical accuracy
 
 ## The rule that makes this repo trustworthy
 
-> **Verify against the real CLI before you document it.** If you write "default denies writes" or "the model rejects `none`", you must have run the command and seen that behavior. Cite the CLI version you tested (`codex 0.144.3`, `claude 2.1.208`, `grok 0.2.93`, `agy 1.1.2`).
+> **Verify against the real CLI before you document it.** If you write "default denies writes" or "the model rejects `none`", you must have run the command and seen that behavior. Cite the exact CLI version and date you tested; versions drift, so do not copy an older audit's numbers.
 
 Model tables and account-visible model lists are **account/version-specific** — always tell the reader to run `codex/grok/agy models` (or the equivalent) as the source of truth, and mark tables as "example / this install".
 

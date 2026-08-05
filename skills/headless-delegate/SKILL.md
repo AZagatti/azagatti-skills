@@ -18,9 +18,9 @@ Cross-vendor SECOND OPINION on a diff/design (different vendor than you're runni
   • xAI take .................................... grok-headless      (grok -p)
   • Gemini / Claude / GPT-OSS via one login ..... agy-headless      (agy -p)
 
-Structured JSON to script against .............. claude-headless / grok-headless (single-result) or codex-exec --json (JSONL); agy = plain text
-Cheap / parallel bulk work ..................... claude-headless --model haiku (or a cheap model on any)
-Actually EDIT files / run tests ................ codex-exec -s workspace-write (strongest repo tooling)
+Structured JSON to script against .............. claude-headless / grok-headless / agy-headless (single result) or codex-exec --json (JSONL)
+Cheap / parallel bulk work ..................... /claude-headless model=haiku or /agy-headless model=gemini-3.6-flash effort=low
+Actually EDIT files / run tests ................ /codex-exec sandbox=workspace-write <task> (strongest repo tooling)
 Same task across many models ................... agy-headless (multi-vendor behind one login)
 ```
 
@@ -28,7 +28,7 @@ Full matrix (workspace flag, default write policy, silent-fail signal, JSON, eff
 
 ## Two rules that always apply
 
-1. **Cross-vendor is the value.** Delegating a model to *itself* for a "second opinion" adds cost, not perspective. If you're running Claude, get the second opinion from Codex/Grok/Antigravity — not another Claude.
+1. **Cross-vendor is the value.** Delegating a model to *itself* for a "second opinion" adds cost, not perspective. If you're running Claude, get the second opinion from Codex/Grok/Antigravity — not another Claude. When routing through multi-vendor Antigravity, explicitly select a model whose underlying vendor differs from the orchestrator; never rely on Antigravity's default.
 2. **Safety is shared.** Whichever you pick, follow least-privilege defaults, verify writes with `git diff` (not the model's prose), and cap turns/budget/timeout. See **[safety.md](https://github.com/AZagatti/azagatti-skills/blob/main/docs/safety.md)**.
 
 ## Hand off
@@ -37,10 +37,10 @@ Once chosen, use that CLI's skill for the exact invocation, permission model, an
 
 | CLI | Skill | Headline gotcha to remember |
 |-----|-------|------------------------------|
-| OpenAI Codex | `codex-exec` | `-C` must precede `review`; reasoning off by default |
-| Claude Code | `claude-headless` | writes denied by default → check `permission_denials` |
-| xAI Grok | `grok-headless` | `-p` takes the prompt as its value; review needs `--always-approve` |
-| Antigravity | `agy-headless` | no cwd → `--add-dir`; hangs (not errors) on unapproved tools |
+| OpenAI Codex | `codex-exec` | `-C` must precede `review`; model/effort can come from config |
+| Claude Code | `claude-headless` | permissions inherit config; use a fail-closed mode and check `permission_denials` |
+| xAI Grok | `grok-headless` | `-p` takes the prompt as its value; permissions depend on trust/rules |
+| Antigravity | `agy-headless` | no cwd → `--add-dir`; denied tools can still return JSON `status:"SUCCESS"` |
 
 ## Quorum recipe (the killer app)
 
