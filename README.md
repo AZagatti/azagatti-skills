@@ -24,7 +24,7 @@ Drive other coding CLIs **headlessly** — so one agent can delegate a self-cont
 | [**agy-headless**](skills/agy-headless/SKILL.md) | Google Antigravity | `agy -p` | `agy 1.1.10` | no cwd → `--add-dir`; denied tools may still report success |
 | [**opencode-run**](skills/opencode-run/SKILL.md) | opencode (any connected provider) | `opencode run` | `opencode 1.18.23` | writes and runs shell with no flag → `--agent plan` for read-only |
 
-*(The Tested column is the full flag/permission audit. The model tables were re-listed on 2026-08-25 against `codex 0.149.1`, `claude 2.1.245`, `grok 1.0.5`, and `agy 1.1.20`. CLI behavior drifts — each skill points you at runtime help/model commands as the source of truth. Evidence: [Codex](docs/research/2026-08-04-codex-cli-audit.md), [Claude](docs/research/2026-08-04-claude-cli-audit.md), [Grok + Antigravity](docs/research/2026-08-04-grok-agy-cli-audit.md).)*
+*(The Tested column is the full flag/permission audit. The model tables were re-listed on 2026-08-25 against `codex 0.149.1`, `claude 2.1.245`, `grok 1.0.5`, and `agy 1.1.20`. CLI behavior drifts — each skill points you at runtime help/model commands as the source of truth. Evidence: [Codex](docs/research/2026-08-04-codex-cli-audit.md), [Claude](docs/research/2026-08-04-claude-cli-audit.md), [Grok + Antigravity](docs/research/2026-08-04-grok-agy-cli-audit.md); the opencode audit has no separate research doc — its evidence is cited inline in [the skill](skills/opencode-run/reference.md).)*
 
 **→ [Cross-CLI comparison & chooser](docs/cli-comparison.md)** · **[Safety & blast radius](docs/safety.md)**
 

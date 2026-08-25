@@ -22,6 +22,7 @@ Cross-vendor SECOND OPINION on a diff/design (different vendor than you're runni
 Structured JSON to script against .............. claude-headless / grok-headless / agy-headless (single result), codex-exec --json or opencode-run --format json (JSONL)
 Cheap / parallel bulk work ..................... /claude-headless model=haiku or /agy-headless model=gemini-3.6-flash effort=low
 Actually EDIT files / run tests ................ /codex-exec sandbox=workspace-write <task> (strongest repo tooling)
+                                                 opencode-run also edits with no flag — that is its default, not a choice
 Same task across many models ................... agy-headless (one login, several vendors) or opencode-run (any provider you connect)
 Read-only review that MUST NOT write ........... /opencode-run agent=plan <task> (its default agent writes)
 ```

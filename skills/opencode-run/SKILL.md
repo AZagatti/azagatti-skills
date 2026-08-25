@@ -1,6 +1,6 @@
 ---
 name: opencode-run
-description: "Drive opencode non-interactively with `opencode run` (headless) — a separate agent over any provider you have connected (z.ai GLM, Amazon Bedrock, and the rest of the `opencode models` catalog behind one CLI). Use when the user mentions opencode, wants to delegate to a GLM/z.ai or other connected model, or invokes `/opencode-run [model=<provider/model>] [variant=<level>] [dir=<path>] <task>`."
+description: "Drive opencode non-interactively with `opencode run` (headless) — a separate agent over a model only the user's own providers reach (a z.ai GLM coding plan, Amazon Bedrock, anything in `opencode models`). Use when the user mentions opencode, wants a second opinion from a provider the other headless CLIs cannot reach, or invokes `/opencode-run [model=<provider/model>] [agent=plan|build] [variant=<level>] [dir=<path>] <task>`."
 ---
 
 # opencode-run — driving `opencode run`
@@ -38,14 +38,14 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 
 - **Options are only the *contiguous leading* tokens whose key is `model`, `variant`, `dir`, or `agent`.** Stop at the first non-matching token — the rest is the **task**, verbatim (an `=` inside the task is preserved).
 - `model=<provider/model>` → `-m`. Always `provider/model`, never a bare model name. No `model=` → omit it and let the config default apply (`model` in `~/.config/opencode/opencode.json`).
-- `variant=<level>` → `--variant`. Provider-specific reasoning effort. **Unvalidated** — an unknown level is accepted silently and runs anyway (§Failure notes).
+- `variant=<level>` → `--variant`. Provider-specific reasoning effort; not validated (§Failure notes).
 - `dir=<path>` → `--dir <path>`. Default: current working directory.
 - `agent=<name>` → `--agent`. `plan` for read-only, `build` for edits. `opencode agent list` shows the rest.
 
 ## 2. Pre-flight
 
 - Resolve every file/path the task names against the target dir — actually check (`ls`/`fd`). If missing, **stop and ask** rather than firing a doomed run.
-- Confirm the model is reachable: `opencode models <provider>`. Skipping this trades a fast error for a slow one.
+- Confirm the model is reachable: `opencode models <provider>`.
 - Decide the working directory (the repo the task is about) → `--dir`.
 
 ## 3. Pick an agent → command
@@ -62,8 +62,9 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 - **`build` is not a sandbox.** It is allow-all: it writes files and runs shell commands unprompted. Only point it at a directory the user authorized, and never at a repo with uncommitted work you cannot inspect afterwards.
 - Do not add `--auto` unless the user asks. It only widens an already-open surface ("auto-approve permissions that are not explicitly denied (dangerous!)").
 - **There is no `--max-turns` and no budget flag.** Cap the blast radius with the agent choice, the directory, and a timeout — not with a turn limit.
-- **`--share` publishes the session.** Never pass it on private code without an explicit request.
+- **`--share` shares the session** (untested here — the help text says "share the session"). Never pass it on private code without an explicit request.
 - **Quoting:** the prompt is a positional argument, so no flag-ordering trap exists. Still single-quote a prompt containing `"`/`` ` ``/`$`, and escape a literal `'` as `'\''`.
+- **Long or multi-line prompts:** both paths work on 1.18.23 — pass the whole thing as one single-quoted positional argument (newlines survive), or pipe it on **stdin** (`printf '%s' "$PROMPT" | opencode run --agent plan`). There is no `--prompt-file`.
 
 ## 4. Run & capture
 
@@ -92,5 +93,5 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 - **Exit 1 with a JSON `UnknownError` blob** = unknown model or provider. Re-check `opencode models <provider>` for the exact `provider/model` string.
 - **A `--variant` typo does not fail.** `--variant bogus-level` exited 0 and ran the request; nothing in the output reports the applied variant. Copy variant names from the provider's documentation and treat a wrong one as silently ignored.
 - **An unwanted file change** = the `build` agent did what it is allowed to do. Re-run read-only tasks with `--agent plan`.
-- Follow the shared blast-radius rules in [docs/safety.md](../../docs/safety.md).
+- Follow the shared blast-radius rules in [safety.md](https://github.com/AZagatti/azagatti-skills/blob/main/docs/safety.md).
 - Everything else (flags, provider setup, event shapes, model table) is in [reference.md](reference.md).

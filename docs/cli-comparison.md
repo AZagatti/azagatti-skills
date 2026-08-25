@@ -7,7 +7,7 @@ The five skills document five CLIs that all do "run an agent non-interactively."
 | | **codex-exec** (OpenAI) | **claude-headless** (Anthropic) | **grok-headless** (xAI) | **agy-headless** (Google Antigravity) | **opencode-run** (any connected provider) |
 |---|---|---|---|---|---|
 | Headless command | `codex exec` | `claude -p` | `grok -p` | `agy -p` | `opencode run` |
-| Prompt delivery | arg or `-` stdin | arg or stdin | **prompt is `-p`'s value** (ordering gotcha) or `--prompt-file` | prompt is `-p`'s value (aliases `--print` / `--prompt`) | positional arg |
+| Prompt delivery | arg or `-` stdin | arg or stdin | **prompt is `-p`'s value** (ordering gotcha) or `--prompt-file` | prompt is `-p`'s value (aliases `--print` / `--prompt`) | positional arg or stdin |
 | Workspace | `-C <dir>` | launch **cwd** (+ `--add-dir`) | `--cwd <dir>` | **none → `--add-dir` required** (else isolated scratch) | `--dir <dir>` (defaults to cwd) |
 | Default write policy | read-only/configured | configured baseline; prompt-class tools deny unless pre-authorized | trust/settings/rule-dependent; approval prompts deny headlessly | denied in headless, including `--mode accept-edits` on 1.1.10 | **allow-all — writes and runs shell with no flag** |
 | Silent-fail signal | command error / failed JSONL event | `permission_denials[]`, often `is_error:false` | non-`end_turn` stop reason or missing side effect | stderr denial + empty response while JSON says `status:"SUCCESS"` | unvalidated `--variant` runs anyway; no terminal result object |

@@ -7,8 +7,8 @@
 opencode is **provider-agnostic**: one CLI in front of whatever accounts you connect, addressed as `provider/model`. That makes it the natural delegate when the second opinion should come from a model no other CLI here can reach — a z.ai GLM coding plan, for example. Three things that bite, all different from the other headless CLIs:
 
 - **The default agent is write-enabled.** There is no "read-only unless you say otherwise" default. See below.
+- **The model is `provider/model`, and the provider must be connected.** An unknown one exits 1.
 - **stdout and stderr are cleanly split.** The answer alone goes to stdout.
-- **`--variant` is not validated.** An unknown reasoning level is accepted and ignored rather than rejected.
 
 ## Permissions and agents (the #1 gotcha)
 
@@ -58,7 +58,7 @@ A provider can also be configured in `~/.config/opencode/opencode.json`, which i
 
 ## Key flags
 
-`opencode run [message..]` — the prompt is positional, so no flag-ordering trap exists.
+`opencode run [message..]` — the prompt is positional, so no flag-ordering trap exists. A multi-line single-quoted argument keeps its newlines, and a prompt piped on **stdin** is read the same way; both verified on 1.18.23. There is no `--prompt-file`.
 
 | Flag | Details |
 |------|---------|
@@ -78,7 +78,7 @@ A provider can also be configured in `~/.config/opencode/opencode.json`, which i
 | `--attach <url>` | Attach to a running opencode server |
 | `--print-logs` / `--log-level` | Diagnostics to stderr |
 
-Related subcommands: `opencode models [provider]` (list selectable models), `opencode agent list` (agents and their permission sets), `opencode auth list` (aliased as `opencode providers`), `opencode session`, `opencode stats` (token and cost statistics), `opencode export <sessionID>`, `opencode serve` (headless server), `opencode upgrade`.
+Related subcommands: `opencode models [provider]` (list selectable models), `opencode agent list` (agents and their permission sets), `opencode auth list` (aliased as `opencode providers`), `opencode session`, `opencode stats` (token and cost statistics), `opencode export <sessionID>`, `opencode serve` (headless server), `opencode pr <number>` (fetch and check out a GitHub PR branch, then run — **not tested in this audit**), `opencode upgrade`.
 
 ## Output shape
 
