@@ -78,7 +78,7 @@ Called with a free-form task, optionally prefixed by `key=value` options:
     | jq -r 'select(.type=="text") | .part.text'
   ```
 - **Verify writes with `git diff`, not prose.** `--format json` emits a `tool_use` event per call (`.part.tool`, `.part.state.status`, `.part.state.metadata.exit`), which tells you what it *attempted*. Only the diff tells you what landed.
-- **`cost` is not money spent.** The `step_finish` event reports `0` on the z.ai coding plan and the free `opencode/*` tier, and a non-zero figure on opencode Go — but Go is a subscription with reset windows, so that figure is a notional token price, not a charge. On either plan the limit that bites is the reset window, not a dollar total. Budget from `tokens.total`, which is accurate everywhere.
+- **`cost` is not money spent.** The `step_finish` event reports `0` on the z.ai coding plan and the free `opencode/*` tier, and a non-zero figure on opencode Go — but Go is a subscription with reset windows, so that figure is a notional token price, not a charge. On either plan the limit that bites is the reset window, not a dollar total. Budget from `tokens.total`, which was populated on every provider tested here.
 - **Long runs:** it is a full agentic loop. Run it in the background or with a generous timeout.
 
 ## 5. After it runs
