@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "headless-clis",
-      "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Each skill documents that CLI's real headless invocation, permission model, output shape, and model/effort support, verified empirically. Includes a router skill to pick the right CLI.",
+      "description": "Drive coding CLIs (OpenAI Codex, Claude Code, xAI Grok, Google Antigravity, opencode) in headless/print mode — delegate a task, get a cross-vendor second opinion, or produce structured output for scripts. Each skill documents that CLI's real headless invocation, permission model, output shape, and model/effort support, verified empirically. Includes a router skill to pick the right CLI.",
       "source": "./",
       "strict": false,
       "category": "development",
@@ -22,6 +22,7 @@
         "claude-code",
         "grok",
         "antigravity",
+        "opencode",
         "delegation"
       ],
       "skills": [
@@ -29,7 +30,8 @@
         "./skills/codex-exec",
         "./skills/claude-headless",
         "./skills/grok-headless",
-        "./skills/agy-headless"
+        "./skills/agy-headless",
+        "./skills/opencode-run"
       ]
     }
   ]

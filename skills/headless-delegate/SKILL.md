@@ -1,12 +1,12 @@
 ---
 name: headless-delegate
-description: "Router for the headless-CLI skills — choose which coding CLI (Codex, Claude, Grok, Antigravity) to delegate to, then hand off to its skill. Invoke with /headless-delegate."
+description: "Router for the headless-CLI skills — choose which coding CLI (Codex, Claude, Grok, Antigravity, opencode) to delegate to, then hand off to its skill. Invoke with /headless-delegate."
 disable-model-invocation: true
 ---
 
 # headless-delegate — pick the right CLI, then hand off
 
-You have four headless-CLI skills. This one is the **front door**: it decides *which* to use and routes to it. It does not run anything itself — it chooses, then you follow that skill.
+You have five headless-CLI skills. This one is the **front door**: it decides *which* to use and routes to it. It does not run anything itself — it chooses, then you follow that skill.
 
 ## Choose
 
@@ -17,11 +17,14 @@ Cross-vendor SECOND OPINION on a diff/design (different vendor than you're runni
   • OpenAI, deep repo / real PR review .......... codex-exec        (codex exec review --base)
   • xAI take .................................... grok-headless      (grok -p)
   • Gemini / Claude / GPT-OSS via one login ..... agy-headless      (agy -p)
+  • A model only YOUR account reaches ........... opencode-run      (opencode run)
 
-Structured JSON to script against .............. claude-headless / grok-headless / agy-headless (single result) or codex-exec --json (JSONL)
+Structured JSON to script against .............. claude-headless / grok-headless / agy-headless (single result), codex-exec --json or opencode-run --format json (JSONL)
 Cheap / parallel bulk work ..................... /claude-headless model=haiku or /agy-headless model=gemini-3.6-flash effort=low
 Actually EDIT files / run tests ................ /codex-exec sandbox=workspace-write <task> (strongest repo tooling)
-Same task across many models ................... agy-headless (multi-vendor behind one login)
+                                                 opencode-run also edits with no flag — that is its default, not a choice
+Same task across many models ................... agy-headless (one login, several vendors) or opencode-run (any provider you connect)
+Read-only review that MUST NOT write ........... /opencode-run agent=plan <task> (its default agent writes)
 ```
 
 Full matrix (workspace flag, default write policy, silent-fail signal, JSON, effort, resume): **[cli-comparison.md](https://github.com/AZagatti/azagatti-skills/blob/main/docs/cli-comparison.md)**.
@@ -41,6 +44,7 @@ Once chosen, use that CLI's skill for the exact invocation, permission model, an
 | Claude Code | `claude-headless` | permissions inherit config; use a fail-closed mode and check `permission_denials` |
 | xAI Grok | `grok-headless` | `-p` takes the prompt as its value; permissions depend on trust/rules |
 | Antigravity | `agy-headless` | no cwd → `--add-dir`; denied tools can still return JSON `status:"SUCCESS"` |
+| opencode | `opencode-run` | **writes and runs shell with no flag** — use `--agent plan` for read-only |
 
 ## Quorum recipe (the killer app)
 
