@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.2.3](https://github.com/AZagatti/azagatti-skills/compare/v0.2.2...v0.2.3) (2026-08-25)
+
+
+### Bug Fixes
+
+* refresh model tables against updated CLIs and vendor docs ([#8](https://github.com/AZagatti/azagatti-skills/issues/8)) ([be88554](https://github.com/AZagatti/azagatti-skills/commit/be885544b402641d80927d69506d07564cc8876b))
+
 ## [0.2.2](https://github.com/AZagatti/azagatti-skills/compare/v0.2.1...v0.2.2) (2026-08-05)
 
 
