@@ -31,8 +31,11 @@ check "grok-headless (xAI)"         grok  "grok --version" \
 check "agy-headless (Antigravity)"  agy   "agy --version" \
   "agy login" \
   'agy --add-dir <repo> --output-format json --print-timeout 3m -p "<task>"'
+check "opencode-run (any provider)"  opencode "opencode --version" \
+  "opencode auth login   # or configure a provider in ~/.config/opencode/opencode.json" \
+  'opencode run --dir <repo> --agent plan -m <provider/model> "<task>"   # plan = read-only; the default agent writes'
 
 echo
-echo "Auth is NOT checked above. If a run hangs or 401s, log in: codex login / (in claude) /login / grok login / agy login"
-echo "Model lists are account/version-specific — verify at runtime: codex (see reference) · grok models · agy models"
+echo "Auth is NOT checked above. If a run hangs or 401s, log in: codex login / (in claude) /login / grok login / agy login / opencode auth login"
+echo "Model lists are account/version-specific — verify at runtime: codex (see reference) · grok models · agy models · opencode models"
 echo "Full safety rules: docs/safety.md · comparison: docs/cli-comparison.md"

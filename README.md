@@ -22,6 +22,7 @@ Drive other coding CLIs **headlessly** — so one agent can delegate a self-cont
 | [**claude-headless**](skills/claude-headless/SKILL.md) | Claude Code | `claude -p` | `claude 2.1.220` | permissions inherit config → fail closed and check `permission_denials` |
 | [**grok-headless**](skills/grok-headless/SKILL.md) | xAI Grok Build | `grok -p` | `grok 0.2.118` | `-p` takes the prompt as its value; permissions depend on trust/rules |
 | [**agy-headless**](skills/agy-headless/SKILL.md) | Google Antigravity | `agy -p` | `agy 1.1.10` | no cwd → `--add-dir`; denied tools may still report success |
+| [**opencode-run**](skills/opencode-run/SKILL.md) | opencode (any connected provider) | `opencode run` | `opencode 1.18.23` | writes and runs shell with no flag → `--agent plan` for read-only |
 
 *(The Tested column is the full flag/permission audit. The model tables were re-listed on 2026-08-25 against `codex 0.149.1`, `claude 2.1.245`, `grok 1.0.5`, and `agy 1.1.20`. CLI behavior drifts — each skill points you at runtime help/model commands as the source of truth. Evidence: [Codex](docs/research/2026-08-04-codex-cli-audit.md), [Claude](docs/research/2026-08-04-claude-cli-audit.md), [Grok + Antigravity](docs/research/2026-08-04-grok-agy-cli-audit.md).)*
 
@@ -101,7 +102,8 @@ azagatti-skills/
     ├── codex-exec/         {SKILL.md, reference.md}
     ├── claude-headless/    {SKILL.md, reference.md}
     ├── grok-headless/      {SKILL.md, reference.md}
-    └── agy-headless/       {SKILL.md, reference.md}
+    ├── agy-headless/       {SKILL.md, reference.md}
+    └── opencode-run/       {SKILL.md, reference.md}
 ```
 
 ## Contributing

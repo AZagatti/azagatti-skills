@@ -29,7 +29,8 @@
         "./skills/codex-exec",
         "./skills/claude-headless",
         "./skills/grok-headless",
-        "./skills/agy-headless"
+        "./skills/agy-headless",
+        "./skills/opencode-run"
       ]
     }
   ]
