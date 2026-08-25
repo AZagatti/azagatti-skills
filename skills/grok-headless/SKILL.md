@@ -36,8 +36,8 @@ Called with a free-form task, optionally prefixed by `key=value` options:
 ```
 
 - **Options are only the *contiguous leading* tokens whose key is `model`, `effort`, `dir`, or `perms`.** Stop at the first non-matching token — the rest is the **task**, verbatim (an `=` inside the task is preserved).
-- `model=<id>` → `-m`. Use an account-visible id from `grok models` or a configured custom-model key; do not copy raw API model names blindly. This account currently exposes only `grok-4.5`.
-- `effort=<low|medium|high>` → `--reasoning-effort`. Grok 4.5 reasons at every tier and defaults to `high`; the current CLI rejects other values.
+- `model=<id>` → `-m`. Use an account-visible id from `grok models` or a configured custom-model key; do not copy raw API model names blindly. Check `grok models` first; on `grok 1.0.5` it lists `grok-4.6` (default) and `grok-4.5`.
+- `effort=<low|medium|high|xhigh>` → `--reasoning-effort`. Validated per model: `grok-4.6` takes all four, `grok-4.5` stops at `high`. Both always reason; `none` and `max` fail locally.
 - `dir=<path>` → `--cwd <path>`. Default: current working directory.
 - `perms=<mode>` → `--permission-mode <mode>` (explicit override of the inference below).
 

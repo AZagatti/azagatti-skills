@@ -84,7 +84,20 @@ Capture just the answer: `claude -p "…" --output-format json | jq -r .result`.
 
 ## Models and effort
 
+**Check the live model list before you trust the tables below.** Claude Code has no `models` subcommand: run `claude --help` for the alias list, read the [model configuration doc](https://code.claude.com/docs/en/model-config) for what each alias resolves to, and query the Models API (`GET /v1/models`, [reference](https://platform.claude.com/docs/en/api/models/list)) for the full ids. The tables are a snapshot of one account on one CLI version.
+
 Aliases resolve dynamically by provider, account, organization policy, and CLI version. On the audited first-party Max account, omission and `opus` resolved to Opus 5, `sonnet` to Sonnet 5, `haiku` to Haiku 4.5, and `fable` to Fable 5. Use a full id when reproducibility matters; still expect organization allowlists to apply.
+
+| Alias | Resolves to (Anthropic API, `claude 2.1.245`) | Full id |
+|-------|------------------------------------------------|---------|
+| `best` | Fable 5 where the organization has access, else the latest Opus | `claude-fable-5` |
+| `fable` | Fable 5 (never the default; may bill usage credits, and `-p` never asks) | `claude-fable-5` |
+| `opus` | Opus 5 (needs CLI >= 2.1.219) | `claude-opus-5` |
+| `sonnet` | Sonnet 5 (needs CLI >= 2.1.197) | `claude-sonnet-5` |
+| `haiku` | Haiku 4.5 | `claude-haiku-4-5` |
+| `opusplan` | `opus` in plan mode, `sonnet` for execution | n/a |
+
+Sources: [model configuration](https://code.claude.com/docs/en/model-config), [models overview](https://platform.claude.com/docs/en/about-claude/models/overview). Other providers resolve `opus`/`sonnet` to older versions (Foundry: Opus 4.6 / Sonnet 4.5); pin a full id there.
 
 **`--effort` accepts `low | medium | high | xhigh | max`, but support is per-model.** For an effort-capable model, Claude Code falls back to the highest supported level at or below the request; organization policy may clamp it further. The live CLI accepted `--model haiku --effort high`, but its JSON does not expose an applied effort, so that only proves argument acceptance—not that effort affected Haiku.
 
@@ -93,6 +106,8 @@ Aliases resolve dynamically by provider, account, organization policy, and CLI v
 | Fable 5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | low, medium, high, xhigh, max |
 | Opus 4.6, Sonnet 4.6 | low, medium, high, max |
 | Models not listed, including Haiku 4.5 | no documented effort support |
+
+The default effort is `high` on every effort-capable model except Opus 4.7 (`xhigh`).
 
 Claude Code also documents `ultracode` as a separate orchestration setting, not a raw model effort tier. Use the [official model configuration](https://code.claude.com/docs/en/model-config) as the live source.
 
