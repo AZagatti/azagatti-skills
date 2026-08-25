@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.3.1](https://github.com/AZagatti/azagatti-skills/compare/v0.3.0...v0.3.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* correct the opencode cost claim and document the Go provider ([#12](https://github.com/AZagatti/azagatti-skills/issues/12)) ([cd007ba](https://github.com/AZagatti/azagatti-skills/commit/cd007ba8458cfcfa2aa1a8064fa90550bbc3f9a0))
+
 ## [0.3.0](https://github.com/AZagatti/azagatti-skills/compare/v0.2.3...v0.3.0) (2026-08-25)
 
 
