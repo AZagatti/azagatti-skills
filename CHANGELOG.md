@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.3.0](https://github.com/AZagatti/azagatti-skills/compare/v0.2.3...v0.3.0) (2026-08-25)
+
+
+### Features
+
+* add opencode-run skill for headless delegation to any connected provider ([#10](https://github.com/AZagatti/azagatti-skills/issues/10)) ([6b9bd53](https://github.com/AZagatti/azagatti-skills/commit/6b9bd534ebe6781a646f76c59e04c32dc57d1083))
+
 ## [0.2.3](https://github.com/AZagatti/azagatti-skills/compare/v0.2.2...v0.2.3) (2026-08-25)
 
 
