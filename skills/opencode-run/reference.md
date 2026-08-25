@@ -101,7 +101,7 @@ Related subcommands: `opencode models [provider]` (list selectable models), `ope
   ```
 
 - **There is no single terminal result object** with a success field. Use the **process exit code** as the pass/fail signal, and `git diff` for writes.
-- **`cost` is provider-dependent — verify before relying on it.** It is `0` on the z.ai coding plan and on the free `opencode/*` models, while `tokens.total` stays accurate. It is populated on opencode Go: the same one-question task reported `0.00775224` on `glm-5.3`, `0.010632` on `qwen3.8-max`, `0.013972` on `grok-4.6`, and `0.0160782` on `kimi-k3` — but `0` on `ox-alpha-free`. Budget from tokens, or from `opencode stats`, unless you have checked that cost is real for the provider you are on.
+- **`cost` is provider-dependent, and a non-zero value is still not a charge.** It reads `0` on the z.ai coding plan and on the free `opencode/*` models. It is populated on opencode Go: the same one-question task reported `0.00775224` on `glm-5.3`, `0.010632` on `qwen3.8-max`, `0.013972` on `grok-4.6`, and `0.0160782` on `kimi-k3` — but `0` on `ox-alpha-free`. **Both plans are subscriptions with reset windows**, so the Go figure is a notional token price rather than incremental billing; per its docs it becomes real spend only once you exhaust the plan limits and opt into the "use balance" fallback onto Zen pay-as-you-go credit. What actually constrains you is the reset window — 5-hour, weekly, and monthly on Go. Budget from `tokens.total` (accurate on every provider) or `opencode stats`, never from `cost`.
 
 ## Models and variants
 
