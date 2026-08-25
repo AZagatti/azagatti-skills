@@ -1,6 +1,6 @@
 # `opencode run` (headless) — full reference
 
-`opencode run [message..]` runs [opencode](https://opencode.ai) non-interactively: it takes a prompt as positional arguments, runs a full agentic session against a provider you configured, prints the answer, and exits. It is the opencode analog of `claude -p` / `codex exec` / `grok -p` / `agy -p`. Verified against `opencode 1.18.23` on 2026-08-25 with the `zai-coding-plan` provider; re-check `opencode run --help`, `opencode models`, and `opencode agent list` because this CLI moves quickly.
+`opencode run [message..]` runs [opencode](https://opencode.ai) non-interactively: it takes a prompt as positional arguments, runs a full agentic session against a provider you configured, prints the answer, and exits. It is the opencode analog of `claude -p` / `codex exec` / `grok -p` / `agy -p`. Verified against `opencode 1.18.23` on 2026-08-25 across the `zai-coding-plan`, `opencode`, and `opencode-go` providers; re-check `opencode run --help`, `opencode models`, and `opencode agent list` because this CLI moves quickly.
 
 ## Mental model
 
@@ -101,11 +101,13 @@ Related subcommands: `opencode models [provider]` (list selectable models), `ope
   ```
 
 - **There is no single terminal result object** with a success field. Use the **process exit code** as the pass/fail signal, and `git diff` for writes.
-- **`cost` is 0 on a subscription plan.** Both observed `step_finish` events reported `cost: 0` with a real `tokens.total` (~13.4k). Budget from tokens, or from `opencode stats`; never from `cost` alone.
+- **`cost` is provider-dependent, and a non-zero value is still not a charge.** It reads `0` on the z.ai coding plan and on the free `opencode/*` models. It is populated on opencode Go: the same one-question task reported `0.00775224` on `glm-5.3`, `0.010632` on `qwen3.8-max`, `0.013972` on `grok-4.6`, and `0.0160782` on `kimi-k3` — but `0` on `ox-alpha-free`. Go is a subscription, so that figure is a notional token price rather than incremental billing. **Per the [Go docs](https://opencode.ai/docs/go/)** (not tested here): the plan caps usage over 5-hour, weekly, and monthly windows, and a run becomes real spend only once you exhaust those limits and opt into the "use balance" fallback onto Zen pay-as-you-go credit. A cap, not a dollar total, is what stops you. Budget from `tokens.total` — populated on every provider tested here — or from `opencode stats`, never from `cost`.
 
 ## Models and variants
 
-**Check the live model list before you trust the table below.** Run `opencode models` (or `opencode models <provider>`); the catalog is account-specific and changes without a CLI release. Listed on 2026-08-25 with `opencode 1.18.23`, which returned 130 selectable models across three providers on the audited machine: `opencode`, `amazon-bedrock`, and `zai-coding-plan`.
+**Check the live model list before you trust the table below.** Run `opencode models` (or `opencode models <provider>`); the catalog is account-specific and changes without a CLI release. Listed on 2026-08-25 with `opencode 1.18.23`: 130 models across three providers (`opencode`, `amazon-bedrock`, `zai-coding-plan`), then 153 across four once `opencode-go` was connected the same day. The count moves with what you connect — which is why you run the command instead of reading this.
+
+**opencode Go** (`opencode-go/*` — connect with `opencode auth login -p opencode-go` and an API key; [its docs](https://opencode.ai/docs/go/) price it at $10/month and point signup at https://opencode.ai/auth, neither checked here) exposed 23 models on 2026-08-25, including `kimi-k3`, `deepseek-v4-pro`, `grok-4.6`, `glm-5.1`/`5.2`/`5.3`, `gpt-5.6-luna`, `minimax-m3`, `qwen3.8-max`, `longcat-2.0`, and `ox-alpha-free`. Free-tier `opencode/*` models need no credentials at all — they answered with no `opencode` entry in either `~/.config/opencode/opencode.json` or `~/.local/share/opencode/auth.json`. (Check the files, not `opencode auth list`, for the reason given above.)
 
 The z.ai coding plan exposed:
 
@@ -120,6 +122,7 @@ The z.ai coding plan exposed:
 Notes:
 
 - **Always pass `provider/model`.** A bare `glm-5.3` is not a valid `-m` value.
+- **A model can exist and still refuse to run.** `opencode-go/deepseek-v4-pro` exited **1** after 3s with `Error: The latest version of this model is only available hosted in China and requires explicit opt in`, plus a workspace URL to accept. The model is listed by `opencode models`; listing is not entitlement.
 - **Unknown model or provider → exit 1** with a JSON blob whose `name` is `UnknownError` and whose message is the unhelpful "Unexpected server error. Check server logs for details." Both `zai-coding-plan/does-not-exist` and `nope/nope` failed this way, so read the exit code rather than the message.
 - **`--variant` is not validated.** `--variant high` ran, and so did `--variant bogus-level` — exit 0, answer returned, no warning. Nothing in the output reports which variant applied, so a typo is indistinguishable from success. Take variant names from the provider's documentation.
 - The same `provider/model` addressing reaches Bedrock-hosted models (`amazon-bedrock/anthropic.claude-opus-5`, `amazon-bedrock/zai.glm-5`) when that provider is connected, which is how one opencode install spans vendors.
