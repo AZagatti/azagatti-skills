@@ -68,16 +68,17 @@ There is no structured permission-denial field in the observed JSON. On 1.1.10, 
 
 ## Models and effort
 
-`agy models` is the account-specific source of truth. Gemini families accept a base slug with effort supplied separately; vendor models that expose only a fixed emitted slug should use that exact slug without a conflicting effort:
+**Check the live model list before you trust the table below.** Run `agy models`; the table is a snapshot of one account on one CLI version, and the lineup changes without a CLI release. Gemini families accept a base slug with effort supplied separately; vendor models that expose only a fixed emitted slug should use that exact slug without a conflicting effort. Listed on 2026-08-25 with `agy 1.1.20`:
 
 | Model slug (`--model` value) | Effort handling | Vendor |
 |-----------------------------------|-----------------|--------|
-| `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro` | add `--effort`; or use an emitted suffixed selection | Google |
+| `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro` | add `--effort`; or use an emitted suffixed selection (`gemini-3.1-pro` emits only `-high` and `-low`) | Google |
 | `claude-sonnet-4-6`, `claude-opus-4-6-thinking` | fixed emitted slug; omit a conflicting `--effort` | Anthropic |
 | `gpt-oss-120b-medium` | fixed emitted slug; omit a conflicting `--effort` | OpenAI-origin open-weight |
 
 - **Selection:** for Gemini, prefer a base family slug such as `gemini-3.6-flash` with `--effort low`; or pass an emitted selection such as `gemini-3.6-flash-low` without a conflicting effort. For Claude/GPT-OSS entries with no base variant, use the exact emitted slug. Unknown values fail instead of silently falling back (fixed in 1.1.2).
-- **Effort:** use `--effort low|medium|high`. Version 1.1.10 fixed earlier cases where `--model`/`--effort` were silently ignored in print mode, so do not generalize results from older releases.
+- **Effort:** use `--effort low|medium|high`. `xhigh` is rejected locally on 1.1.20 (`invalid --effort "xhigh" (valid: low, medium, high)`); `gemini-3.7-flash` ran at all three levels. Version 1.1.10 fixed earlier cases where `--model`/`--effort` were silently ignored in print mode, so do not generalize results from older releases.
+- The [Antigravity models doc](https://antigravity.google/docs/models/) lists the same lineup (Flash families at Low/Medium/High, Gemini 3.1 Pro at High, Claude 4.6 thinking models, GPT-OSS 120B Medium) and says Claude and GPT models are unavailable on Enterprise plans. The CLI doc pages do not document `--model`/`--effort` values; `agy models` is the only slug source.
 - The lineup drifts (Antigravity is new and Google-managed) — re-run `agy models` rather than trusting this table.
 
 ## Vision (image input)

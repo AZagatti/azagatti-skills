@@ -52,8 +52,8 @@ On the audited trusted project with no loaded permission rules and `yolo=false`,
 | `-p, --single <PROMPT>` | Single-turn: print response and exit. **Prompt is the flag's value** (see ordering) |
 | `--prompt-file <PATH>` / `--prompt-json <JSON>` | Single-turn prompt from a file / as JSON content blocks (avoids shell quoting) |
 | `--output-format` | `plain` · `json` · `streaming-json` · `streaming-messages-json` |
-| `-m, --model <MODEL>` | Model id (default `grok-4.5`). See Models below |
-| `--reasoning-effort <E>` (alias `--effort`) | Current accepted values: `low` \| `medium` \| `high` |
+| `-m, --model <MODEL>` | Model id (default `grok-4.6` on 1.0.5; `grok-4.5` on 0.2.118). See Models below |
+| `--reasoning-effort <E>` (alias `--effort`) | Per-model, validated locally on 1.0.5: `grok-4.6` takes `low` \| `medium` \| `high` \| `xhigh`; `grok-4.5` takes `low` \| `medium` \| `high` |
 | `--permission-mode <M>` | `default` · `acceptEdits` · `auto` · `dontAsk` · `bypassPermissions` · `plan` |
 | `--always-approve` | Auto-approve **all** tool executions; reserve for explicit authorization in a trusted directory |
 | `--allow <RULE>` / `--deny <RULE>` | Permission allow/deny rule (Claude Code: `--allowedTools`/`--disallowedTools`) |
@@ -83,17 +83,18 @@ Capture just the answer: `grok -p "…" --output-format json | jq -r .text`. Whe
 
 ## Models and effort
 
-**`grok models` is the authoritative list of built-in models for the current account.** Configured custom-model keys are also selectable. The Grok Build CLI surface is not the full xAI API catalog: passing an unavailable built-in id hard-errors, so do not copy raw API model names blindly.
+**Check the live model list before you trust the table below.** Run `grok models`; the table is a snapshot of one account on one CLI version, and the lineup changes without a CLI release. Configured custom-model keys are also selectable. The Grok Build CLI surface is not the full xAI API catalog: passing an unavailable built-in id hard-errors, so do not copy raw API model names blindly.
 
-This install (logged in with grok.com) currently exposes one built-in model:
+`grok models` on `grok 1.0.5` (2026-08-25, grok.com login) exposes two built-in models:
 
 | Model (from `grok models`) | Role | `--effort` levels that work | Reasoning off (`none`)? |
 |----------------------------|------|-----------------------------|:---:|
-| **`grok-4.5`** (default) | flagship coding/agentic | `low`, `medium`, `high` (default `high`) | ❌ always reasons |
+| **`grok-4.6`** (default on 1.0.5) | flagship coding/agentic, 500k context | `low`, `medium`, `high`, `xhigh` (all ran on 1.0.5; default `high` per the [model page](https://docs.x.ai/developers/grok-4-6), not reported in the JSON) | ❌ `none` fails locally |
+| `grok-4.5` (default on 0.2.118) | previous flagship | `low`, `medium`, `high` (default `high`); `xhigh` fails locally on 1.0.5 | ❌ always reasons |
 
-**`--reasoning-effort` (alias `--effort`)** accepts `low | medium | high` in 0.2.118; other values fail locally. Use low for latency-sensitive work and high for harder reasoning. The JSON `thought` field is not a full reasoning trace and should not be used to estimate the effort applied.
+**`--reasoning-effort` (alias `--effort`)** is validated per model before any request: on 1.0.5, `grok-4.6` accepts `low | medium | high | xhigh` and `grok-4.5` accepts `low | medium | high`. Any other value fails with `unknown effort level '<v>'; use one of: ...`, which lists the valid set for that model. Use low for latency-sensitive work and high for harder reasoning. The JSON `thought` field is not a full reasoning trace and should not be used to estimate the effort applied.
 
-> The wider xAI **API** (raw `api.x.ai` with an API key — `grok-4.3`, `grok-4.20-*`, `grok-3-mini`, etc., per [xAI docs](https://docs.x.ai/docs/models)) is a **separate surface** and is **not** selectable through `grok -m` on a grok.com login. A different account/plan may expose a different set — trust that account's `grok models` output, not this table.
+> The wider xAI **API** (raw `api.x.ai` with an API key — `grok-4.3`, `grok-4.20-*`, `grok-build-0.1`, etc., per [xAI docs](https://docs.x.ai/docs/models); `GET https://api.x.ai/v1/models` answers 401 without a key) is a **separate surface** and is **not** selectable through `grok -m` on a grok.com login. A different account/plan may expose a different set — trust that account's `grok models` output, not this table.
 
 ## Vision (image input)
 
@@ -104,4 +105,4 @@ Image support is **per-model, not a CLI feature.** There is no `--image` flag �
 - `grok` on PATH (`grok --version`); `grok login` / `grok logout` manage auth (here: logged in with grok.com). `grok inspect` shows the config Grok discovers for a directory.
 - Long runs: `grok -p` is a full agentic loop — run it in the background or with a generous timeout so it isn't killed by a default tool timeout; cap turns with `--max-turns`.
 
-Sources: [Grok Build overview](https://docs.x.ai/build/overview), [Headless & Scripting](https://docs.x.ai/build/cli/headless-scripting), [Permissions](https://docs.x.ai/build/features/permissions), and [Grok 4.5](https://docs.x.ai/developers/grok-4-5).
+Sources: [Grok Build overview](https://docs.x.ai/build/overview), [Grok 4.6 model page](https://docs.x.ai/developers/grok-4-6), [Headless & Scripting](https://docs.x.ai/build/cli/headless-scripting), [Permissions](https://docs.x.ai/build/features/permissions), and [Grok 4.5](https://docs.x.ai/developers/grok-4-5).

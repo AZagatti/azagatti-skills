@@ -99,7 +99,7 @@ codex exec resume --last --all "continue across cwd boundaries"
 
 Select a model with `-m <slug>` and its reasoning effort with `-c model_reasoning_effort="<effort>"` (also settable in `~/.codex/config.toml`, or interactively via `/model`). Effort is per-model — a model only accepts the levels in its row.
 
-**Scope:** this is the dated account-visible catalog for the audited ChatGPT login, not the complete OpenAI API catalog. Refresh with `codex debug models`; auth mode, plan, policy, rollout, and client version can change it.
+**Check the live model list before you trust the table below.** Run `codex debug models`; the table is a snapshot of one account on one CLI version, and the lineup changes without a CLI release. This is the account-visible catalog for the audited ChatGPT login, not the complete OpenAI API catalog; auth mode, plan, policy, and rollout change it. Listed with `codex-cli 0.149.1` on 2026-08-25. The [Codex models doc](https://learn.chatgpt.com/docs/models) names the same seven public slugs and calls `medium` the default effort; the catalog's per-model default (below) is what the CLI applies, so `gpt-5.6-sol` starts at `low`.
 
 | Model slug | Catalog default | Catalog-advertised efforts | Explicit `none` observation | Catalog API field |
 |------------|-----------------|----------------------------|-----------------------------|:---:|
@@ -112,7 +112,7 @@ Select a model with `-m <slug>` and its reasoning effort with `-c model_reasonin
 | `gpt-5.3-codex-spark` | high | low, medium, high, xhigh | explicit `none` rejected; unset worked | no |
 | `codex-auto-review` | medium | low, medium, high, xhigh, max | hidden/internal; untested | yes |
 
-The generic public alias `gpt-5.6` failed on this ChatGPT-account CLI even though the exact family slugs worked. Prefer a live catalog slug. OpenAI has also announced that GPT-5.4 and GPT-5.4-mini retire from Codex with ChatGPT sign-in on 2026-08-31.
+The generic public alias `gpt-5.6` failed on this ChatGPT-account CLI even though the exact family slugs worked. Prefer a live catalog slug. OpenAI has also announced that GPT-5.4 and GPT-5.4-mini retire from Codex with ChatGPT sign-in on 2026-08-31; the [models doc](https://learn.chatgpt.com/docs/models) names `gpt-5.6-terra` and `gpt-5.6-luna` as their replacements.
 
 ### Unset effort versus explicit `none`
 
