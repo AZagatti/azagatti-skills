@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The version is plugin-level
 (one version for the whole `headless-clis` plugin), tracked in `.claude-plugin/plugin.json`.
 
+## [0.4.0](https://github.com/AZagatti/azagatti-skills/compare/v0.3.1...v0.4.0) (2026-11-11)
+
+
+### Features
+
+* add omp-print skill ([#14](https://github.com/AZagatti/azagatti-skills/issues/14)) ([15d67fc](https://github.com/AZagatti/azagatti-skills/commit/15d67fcab2918a9b12ab9d433bc5145fc5695af9))
+
 ## [0.3.1](https://github.com/AZagatti/azagatti-skills/compare/v0.3.0...v0.3.1) (2026-08-25)
 
 
